@@ -1,0 +1,7 @@
+.vscode/
+todo.md
+errors.md
+indexes.md
+Makefile
+bin/*.o
+bin/*.exe
