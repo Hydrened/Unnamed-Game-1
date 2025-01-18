@@ -2,9 +2,11 @@
 #define ENTITY_H
 
 #include "game.h"
+#include "weapon.h"
 class Game;
 class Map;
 class Sprite;
+class Weapon;
 
 class Entity {
 protected:
@@ -15,8 +17,13 @@ protected:
     Sprite* sprite;
 
     Face facing = LEFT;
+    Weapon* weapon = nullptr;
 
     void updateSprite();
+    void updateWeapon();
+    void renderTexture();
+    void renderWeapon();
+    virtual void kill() = 0;
 
 public:
     Entity(Game* game, Map* map, LevelPos pos, EntityData data);
@@ -25,7 +32,11 @@ public:
     virtual void update() = 0;
     void render();
 
+    void equipWeapon(int id); 
+    void inflictDamages(float damages, float crit);
+
     LevelPos getPos() const;
+    EntityData getData() const;
 };
 
 
@@ -36,6 +47,7 @@ private:
     void updateForWorldCollisions();
     void updateAnimation(LevelPos defaultPos);
     void updateFacing();
+    void kill() override;
 
 public:
     Player(Game* game, Map* map, LevelPos pos, EntityData data);
@@ -50,6 +62,7 @@ class Enemy : public Entity {
 private:
     bool isNearPlayer();
     void updateForPlayer();
+    void kill() override;
 
 public:
     Enemy(Game* game, Map* map, LevelPos pos, EntityData data);

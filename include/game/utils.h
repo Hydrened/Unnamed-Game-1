@@ -33,6 +33,8 @@ struct LevelPos {
     float y;
 
     LevelPos operator+(const LevelPos& other) const;
+    LevelPos operator-(const LevelPos& other) const;
+    LevelPos operator/(const int& other) const;
     bool operator==(const LevelPos& other) const;
     LevelRect makeRect(LevelSize size) const;
 };
@@ -46,7 +48,13 @@ struct LevelSize {
     float h;
 
     LevelSize operator+(const LevelSize& other) const;
+    LevelSize operator/(const int& other) const;
     LevelRect makeRect(LevelPos pos) const;
+};
+
+struct LevelVelocity {
+    float x;
+    float y;
 };
 
 struct LevelRect {
@@ -59,6 +67,7 @@ struct LevelRect {
     Face collides(const LevelRect& other) const;
     LevelPos getPos() const;
     LevelSize getSize() const;
+    LevelPos getCenter() const;
 };
 
 struct Texture {
@@ -83,7 +92,6 @@ struct EntityStats {
     float speed;
     float crit;
     float pickup;
-    float haste;
     float regeneration;
 };
 
@@ -91,6 +99,22 @@ struct EntityData {
     Texture texture;
     LevelRect hitbox;
     EntityStats stats;
+};
+
+struct BulletData {
+    Texture texture;
+    LevelSize size;
+    float speed;
+    float damage;
+    bool piercing;
+    bool explosive;
+};
+
+struct WeaponData {
+    std::string name;
+    Texture texture;
+    int delay;
+    BulletData bullet;
 };
 
 std::ostream& operator<<(std::ostream& os, const LevelPos& pos);

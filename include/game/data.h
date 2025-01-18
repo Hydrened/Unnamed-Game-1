@@ -49,6 +49,8 @@ struct GameData {
     };
 
     struct Physics {
+        float critDamageMultiplier = 1.5f;
+
         std::unordered_map<std::string, LevelRect> decorationHitboxes = {
             { "tree-1.png", { 0.15f, 0.25f, 0.7f, 0.5f } },
             { "tree-2.png", { 0.15f, 0.25f, 0.7f, 0.5f } },
@@ -76,25 +78,31 @@ struct GameData {
 
     std::unordered_map<int, EntityData> entities = {
         { 0, {{ "player.png", SDL_FLIP_NONE }, { 0.0f, 0.0f, 0.5f, 0.5f }, {
-            0.0f,   /*< health */
+            50.0f,  /*< health */
             0.0f,   /*< attack */
             0.0f,   /*< defence */
-            0.1f,  /*< speed */
+            0.1f,   /*< speed */
             0.0f,   /*< crit */
             0.0f,   /*< pickup */
-            0.0f,   /*< haste */
             0.0f,   /*< regeneration */
         }}},
         { 1, {{ "player.png", SDL_FLIP_NONE }, { 0.0f, 0.0f, 0.5f, 0.5f }, {
-            0.0f,   /*< health */
+            10.0f,  /*< health */
             0.0f,   /*< attack */
             0.0f,   /*< defence */
             0.05f,  /*< speed */
             0.0f,   /*< crit */
             0.0f,   /*< pickup */
-            0.0f,   /*< haste */
             0.0f,   /*< regeneration */
         }}},
+    };
+
+    std::unordered_map<int, WeaponData> weapons = {
+        { 0, { "9mm", { "weapon.png", SDL_FLIP_NONE }, 500, {
+            { "player.png", SDL_FLIP_NONE }, { 0.15f, 0.15f },
+                0.1f, 10.0f, false, false    /*< speed, damage, piercing, explosive */
+            }
+        }},
     };
 
     ~GameData() {

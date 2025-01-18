@@ -17,10 +17,16 @@ bool Enemy::isNearPlayer() {
     return (std::abs(playerPos.x - pos.x) < condiredNearPlayerRange && std::abs(playerPos.y - pos.y) < condiredNearPlayerRange);
 }
 
+void Enemy::kill() {
+    Map* map = game->getMap();
+    map->killEnemy(this);
+}
+
 // UPDATE
 void Enemy::update() {
     updateSprite();
     updateForPlayer();
+    updateWeapon();
 }
 
 void Enemy::updateForPlayer() {
@@ -29,11 +35,9 @@ void Enemy::updateForPlayer() {
         LevelPos playerPos = map->getPlayer()->getPos();
 
         float angle = std::atan2(playerPos.y - pos.y, playerPos.x - pos.x);
-        float xVelocity = data.stats.speed * std::cos(angle);
-        float yVelocity = data.stats.speed * std::sin(angle);
-        pos.x += xVelocity;
-        pos.y += yVelocity;
+        LevelPos velocity = { data.stats.speed * std::cos(angle), data.stats.speed * std::sin(angle) };
+        pos = pos + velocity;
 
-        if (xVelocity != 0) facing = (xVelocity > 0) ? RIGHT : LEFT;
+        if (velocity.x != 0) facing = (velocity.x > 0) ? RIGHT : LEFT;
     } else sprite->setAnimation(IDLE);
 }

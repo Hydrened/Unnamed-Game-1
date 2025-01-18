@@ -30,13 +30,14 @@ private:
 
     GameData* data = new GameData();
     GameState state = MAIN_MENU;
-    bool debugMode = true;
+    bool debugMode = false;
 
     Calculator* calculator = nullptr;
     Camera* camera = nullptr;
     Map* map = nullptr;
 
-    std::vector<SDL_Keycode> keysDown;
+    std::vector<SDL_Keycode> keysDown = {};
+    std::vector<int> mouseButtonsDown = {};
     H2DE_Pos mousePos = { 0, 0 };
 
     void createWindow();
@@ -62,6 +63,7 @@ public:
     Camera* getCamera() const;
     Map* getMap() const;
     std::vector<SDL_Keycode> getKeysDown() const;
+    std::vector<int> getMouseButtonsDown() const;
     void getMousePos(int* x, int* y) const;
     bool getDebugMode() const;
 

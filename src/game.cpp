@@ -91,21 +91,30 @@ void Game::run() {
 
 // EVENTS
 void Game::handleEvents(SDL_Event event) {
-    
     while (SDL_PollEvent(&event)) switch (event.type) {
         case SDL_QUIT: quit(); break;
 
-        case SDL_KEYDOWN:
-            if (std::find(keysDown.begin(), keysDown.end(), event.key.keysym.sym) == keysDown.end()) {
-                keysDown.push_back(event.key.keysym.sym);
-            }
+        case SDL_KEYDOWN: {
+            SDL_Keycode key = event.key.keysym.sym;
+            if (std::find(keysDown.begin(), keysDown.end(), key) == keysDown.end()) keysDown.push_back(key);
             break;
+        }
 
         case SDL_KEYUP:
             keysDown.erase(std::find(keysDown.begin(), keysDown.end(), event.key.keysym.sym));
             break;
 
         case SDL_MOUSEMOTION: mousePos = { event.button.x, event.button.y }; break;
+
+        case SDL_MOUSEBUTTONDOWN: {
+            int button = event.button.button;
+            if (std::find(mouseButtonsDown.begin(), mouseButtonsDown.end(), button) == mouseButtonsDown.end()) mouseButtonsDown.push_back(button);
+            break;
+        }
+
+        case SDL_MOUSEBUTTONUP:
+            mouseButtonsDown.erase(std::find(mouseButtonsDown.begin(), mouseButtonsDown.end(), event.button.button));
+            break;
 
         default: break;
     }
@@ -160,6 +169,10 @@ Map* Game::getMap() const {
 
 std::vector<SDL_Keycode> Game::getKeysDown() const {
     return keysDown;
+}
+
+std::vector<int> Game::getMouseButtonsDown() const {
+    return mouseButtonsDown;
 }
 
 void Game::getMousePos(int* x, int* y) const {

@@ -1,3 +1,13 @@
+## 1.0.1
+#### ADDED
+- weapons
+- bullets
+- shooting
+- bullet damages
+- defence
+- crit
+- enemy spawning on camera edges
+
 ## 1.0.0
 #### ADDED
 - player

@@ -1,7 +1,5 @@
 #include "entity.h"
 
-// ENTITY
-
 // INIT
 Entity::Entity(Game* g, Map* m, LevelPos p, EntityData d) : game(g), map(m), pos(p), data(d), sprite(new Sprite(g, d.texture.name, 200)) {
 
@@ -12,13 +10,39 @@ Entity::~Entity() {
 
 }
 
+// EVENT
+void Entity::equipWeapon(int id) {
+    if (weapon) delete weapon;
+    static std::unordered_map<int, WeaponData> weapons = game->getData()->weapons;
+    weapon = new Weapon(game, this, weapons[id]);
+}
+
+void Entity::inflictDamages(float damages, float crit) {
+    static float critDamageMultiplier = game->getData()->physics->critDamageMultiplier;
+
+    if (rand(crit)) damages *= critDamageMultiplier;
+    damages = std::max(damages - data.stats.defence, 0.0f);
+    data.stats.health -= damages;
+
+    if (data.stats.health <= 0) kill();
+}
+
 // UPDATE
 void Entity::updateSprite() {
     sprite->update();
 }
 
+void Entity::updateWeapon() {
+    if (weapon) weapon->update();
+}
+
 // RENDER
 void Entity::render() {
+    renderTexture();
+    renderWeapon();
+}
+
+void Entity::renderTexture() {
     static H2DE_Engine* engine = game->getEngine();
     static Calculator* cal = game->getCalculator();
     static GameData* gameData = game->getData();
@@ -38,7 +62,15 @@ void Entity::render() {
     map->displayHitbox(data.hitbox + pos, { 255, 0, 0, 255 });
 }
 
+void Entity::renderWeapon() {
+    if (weapon) weapon->render();
+}
+
 // GETTER
 LevelPos Entity::getPos() const {
     return pos;
+}
+
+EntityData Entity::getData() const {
+    return data;
 }

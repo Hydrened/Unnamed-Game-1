@@ -13,18 +13,21 @@ private:
 
     Player* player = nullptr;
     std::vector<Enemy*> enemies;
+    std::vector<Enemy*> enemiesToRemove;
     std::unordered_map<LevelPos, Tile*, LevelPosHash> tiles;
+    H2DE_TimelineManager* tm = H2DE_CreateTimelineManager();
 
     void initPlayer();
 
     void generate();
     void generateTile(LevelPos pos);
     void generateStructure(LevelPos pos);
+    void summonEnemy(int id, float sizeMultiplier);
+    void summonEnemy(int id, LevelPos pos, float sizeMultiplier);
 
+    void updateEnemies();
     void renderAntiLineBug();
     void renderTiles();
-
-    void summonEnemy(int id, LevelPos pos, float sizeMultiplier);
 
 public:
     Map(Game* game);
@@ -34,10 +37,12 @@ public:
     void render();
 
     void displayHitbox(LevelRect hitbox, H2DE_RGB color);
+    void killEnemy(Enemy* enemy);
 
     Player* getPlayer() const;
     std::unordered_map<LevelPos, Tile*, LevelPosHash>* getTiles();
     std::unordered_map<LevelPos, Tile*, LevelPosHash> getPerimeter(LevelPos pos, bool withCenter);
+    std::vector<Enemy*> getEnemies() const;
 };
 
 #endif

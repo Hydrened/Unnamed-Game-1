@@ -27,9 +27,12 @@ int getIndex(float yPos, int index) {
 }
 
 bool rand(float value) {
+    return (rand(0.0f, 100.0f) < value);
+}
+
+float rand(float min, float max) {
     static std::random_device rd;
     static std::default_random_engine e(rd());
-    std::uniform_int_distribution<int> dist(0.0f, 100.0f);
-
-    return (dist(e) < value);
+    std::uniform_real_distribution<float> dist(min, max);
+    return dist(e);
 }

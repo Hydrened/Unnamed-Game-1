@@ -7,5 +7,6 @@ std::string getRandomTexture(std::vector<TextureProbability> textureProbabilitie
 SDL_RendererFlip getRandomFlipX();
 int getIndex(float yPos, int index);
 bool rand(float value);
+float rand(float min, float max);
 
 #endif

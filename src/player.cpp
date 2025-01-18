@@ -2,12 +2,17 @@
 
 // INIT
 Player::Player(Game* g, Map* m, LevelPos p, EntityData d) : Entity(g, m, p, d) {
-
+    equipWeapon(0);
 }
 
 // CLEANUP
 Player::~Player() {
 
+}
+
+// EVENTS
+void Player::kill() {
+    
 }
 
 // UPDATE
@@ -18,6 +23,7 @@ void Player::update() {
     updateForWorldCollisions();
     updateFacing();
     updateAnimation(defaultPos);
+    updateWeapon();
 }
 
 void Player::updateForControls() {

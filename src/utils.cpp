@@ -8,6 +8,20 @@ LevelPos LevelPos::operator+(const LevelPos& other) const {
     return res;
 }
 
+LevelPos LevelPos::operator-(const LevelPos& other) const {
+    LevelPos res = *this;
+    res.x -= other.x;
+    res.y -= other.y;
+    return res;
+}
+
+LevelPos LevelPos::operator/(const int& other) const {
+    LevelPos res = *this;
+    res.x /= other;
+    res.y /= other;
+    return res;
+}
+
 bool LevelPos::operator==(const LevelPos& other) const {
     return (x == other.x && y == other.y);
 }
@@ -30,6 +44,13 @@ LevelSize LevelSize::operator+(const LevelSize& other) const {
     LevelSize res = *this;
     res.w += other.w;
     res.h += other.h;
+    return res;
+}
+
+LevelSize LevelSize::operator/(const int& other) const {
+    LevelSize res = *this;
+    res.w /= other;
+    res.h /= other;
     return res;
 }
 
@@ -76,6 +97,10 @@ LevelPos LevelRect::getPos() const {
 
 LevelSize LevelRect::getSize() const {
     return { w, h };
+}
+
+LevelPos LevelRect::getCenter() const {
+    return { x + w / 2, y + h / 2 };
 }
 
 

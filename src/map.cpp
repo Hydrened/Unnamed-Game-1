@@ -4,7 +4,12 @@
 Map::Map(Game* g) : game(g) {
     initPlayer();
     game->setState(PLAYING);
-    summonEnemy(1, { 10.0f, 10.0f }, 1.0f);
+
+    static H2DE_Engine* engine = game->getEngine();
+    H2DE_Timeline* t = H2DE_CreateTimeline(engine, 1000, LINEAR, NULL, [this]() {
+        summonEnemy(1, 1.0f);
+    }, -1);
+    H2DE_AddTimelineToManager(tm, t);
 }
 
 void Map::initPlayer() {
@@ -74,8 +79,29 @@ void Map::generateStructure(LevelPos pos) {
     // générer à des endroits random
 }
 
-void Map::summonEnemy(int id, LevelPos pos, float sizeMultiplier) {
+void Map::summonEnemy(int id, float sizeMultiplier) {
+    static Camera* camera = game->getCamera();
     static GameData* gameData = game->getData();
+    static float blocksOnWidth = gameData->sizes->blocksOnWidth;
+    static float blocksOnHeight = gameData->sizes->blocksOnHeight;
+    
+    float rX = rand(0.0f, 1.0f);
+    float rY = rand(0.0f, 1.0f);
+
+    if (rand(50.0f)) rY = std::round(rY);
+    else rX = std::round(rX);
+
+    if (rX == 0.0f) rX -= 0.1f;
+    else if (rX == 1.0f) rX += 0.1f;
+
+    if (rY == 0.0f) rY -= 0.1f;
+    else if (rY == 1.0f) rY += 0.1f;
+
+    LevelPos pos = { rX * blocksOnWidth, rY * blocksOnHeight };
+    summonEnemy(id, pos + camera->getPos(), sizeMultiplier);
+}
+
+void Map::summonEnemy(int id, LevelPos pos, float sizeMultiplier) {
     static std::unordered_map<int, EntityData> entities = game->getData()->entities;
     enemies.push_back(new Enemy(game, this, pos, entities[id]));
 }
@@ -102,6 +128,10 @@ void Map::displayHitbox(LevelRect hitbox, H2DE_RGB color) {
     H2DE_AddGraphicObject(engine, h);
 }
 
+void Map::killEnemy(Enemy* enemy) {
+    if (std::find(enemiesToRemove.begin(), enemiesToRemove.end(), enemy) == enemiesToRemove.end()) enemiesToRemove.push_back(enemy);
+}
+
 // UPDATE
 void Map::update() {
     static Camera* camera = game->getCamera();
@@ -109,7 +139,22 @@ void Map::update() {
     player->update();
     camera->update();
     generate();
+    updateEnemies();
+}
+
+void Map::updateEnemies() {
+    H2DE_TickTimelineManager(tm);
+
     for (Enemy* enemy : enemies) enemy->update();
+
+    for (Enemy* enemy : enemiesToRemove) {
+        auto it = std::find(enemies.begin(), enemies.end(), enemy);
+        if (it != enemies.end()) {
+            delete *it;
+            enemies.erase(it);
+        }
+    }
+    enemiesToRemove.clear();
 }
 
 // RENDER
@@ -222,3 +267,7 @@ std::unordered_map<LevelPos, Tile*, LevelPosHash> Map::getPerimeter(LevelPos pos
     }
     return res;
 }    
+
+std::vector<Enemy*> Map::getEnemies() const {
+    return enemies;
+}
