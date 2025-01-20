@@ -56,9 +56,9 @@ void Player::updateForWorldCollisions() {
 
     for (const auto& [tilePos, tile] : game->getMap()->getPerimeter({ pos.x + playerHitbox.w / 2, pos.y + playerHitbox.h / 2 }, true)) {
         if (!tile->decoration.has_value()) continue;
-        if (decorationHitboxes.find(tile->decoration.value().name) == decorationHitboxes.end()) continue;
+        if (decorationHitboxes.find(tile->decoration.value()) == decorationHitboxes.end()) continue;
 
-        LevelRect decorationHitbox = decorationHitboxes[tile->decoration.value().name] + tilePos;
+        LevelRect decorationHitbox = decorationHitboxes[tile->decoration.value()] + tilePos;
         switch (playerHitbox.collides(decorationHitbox)) {
             case TOP: pos.y = decorationHitbox.y + decorationHitbox.h; break;
             case BOTTOM: pos.y = decorationHitbox.y - playerHitbox.h; break;

@@ -27,6 +27,11 @@ struct GameData {
             { "bush.png", { 2.0f, 1.0f } },
             { "tree-1.png", { 3.0f, 3.0f } },
             { "tree-2.png", { 3.0f, 3.0f } },
+            { "xp-lvl-1.png", { 0.8f, 0.8f } },
+            { "xp-lvl-2.png", { 0.8f, 0.8f } },
+            { "xp-lvl-3.png", { 0.8f, 0.8f } },
+            { "xp-lvl-4.png", { 0.8f, 0.8f } },
+            { "xp-lvl-5.png", { 0.8f, 0.8f } },
         };
     };
 
@@ -45,11 +50,19 @@ struct GameData {
             { "bush.png", { -0.5f, 0.0f } },
             { "tree-1.png", { -1.0f, -2.0f } },
             { "tree-2.png", { -1.0f, -2.0f } },
+            { "xp-lvl-1.png", { 0.0f, -0.1f } },
+            { "xp-lvl-2.png", { 0.0f, -0.1f } },
+            { "xp-lvl-3.png", { 0.0f, -0.1f } },
+            { "xp-lvl-4.png", { 0.0f, -0.1f } },
+            { "xp-lvl-5.png", { 0.0f, -0.1f } },
         };
     };
 
     struct Physics {
         float critDamageMultiplier = 1.5f;
+        float airResistance = 0.05f;
+
+        LevelRect xpHitbox = { 0.0f, 0.0f, 0.75f, 0.5f };
 
         std::unordered_map<std::string, LevelRect> decorationHitboxes = {
             { "tree-1.png", { 0.15f, 0.25f, 0.7f, 0.5f } },
@@ -76,33 +89,37 @@ struct GameData {
         };
     };
 
-    std::unordered_map<int, EntityData> entities = {
-        { 0, {{ "player.png", SDL_FLIP_NONE }, { 0.0f, 0.0f, 0.5f, 0.5f }, {
-            50.0f,  /*< health */
-            0.0f,   /*< attack */
-            0.0f,   /*< defence */
-            0.1f,   /*< speed */
-            0.0f,   /*< crit */
-            0.0f,   /*< pickup */
-            0.0f,   /*< regeneration */
-        }}},
-        { 1, {{ "player.png", SDL_FLIP_NONE }, { 0.0f, 0.0f, 0.5f, 0.5f }, {
-            10.0f,  /*< health */
-            0.0f,   /*< attack */
-            0.0f,   /*< defence */
-            0.05f,  /*< speed */
-            0.0f,   /*< crit */
-            0.0f,   /*< pickup */
-            0.0f,   /*< regeneration */
-        }}},
-    };
+    struct Others {
+        int maxXpLevel = 5;
 
-    std::unordered_map<int, WeaponData> weapons = {
-        { 0, { "9mm", { "weapon.png", SDL_FLIP_NONE }, 500, {
-            { "player.png", SDL_FLIP_NONE }, { 0.15f, 0.15f },
-                0.1f, 10.0f, false, false    /*< speed, damage, piercing, explosive */
-            }
-        }},
+        std::unordered_map<int, EntityData> entities = {
+            { 0, { "player.png", { 0.0f, 0.0f, 0.5f, 0.5f }, 0, {
+                50.0f,  /*< health */
+                0.0f,   /*< attack */
+                0.0f,   /*< defence */
+                0.1f,   /*< speed */
+                0.0f,   /*< crit */
+                0.0f,   /*< pickup */
+                0.0f,   /*< regeneration */
+            }}},
+            { 1, { "player.png", { 0.0f, 0.0f, 0.5f, 0.5f }, 1, {
+                10.0f,  /*< health */
+                0.0f,   /*< attack */
+                0.0f,   /*< defence */
+                0.05f,  /*< speed */
+                0.0f,   /*< crit */
+                0.0f,   /*< pickup */
+                0.0f,   /*< regeneration */
+            }}},
+        };
+
+        std::unordered_map<int, WeaponData> weapons = {
+            { 0, { "9mm", "weapon.png", 500, {
+                "player.png", { 0.15f, 0.15f },
+                    0.1f, 10.0f, false, false    /*< speed, damage, piercing, explosive */
+                }
+            }},
+        };
     };
 
     ~GameData() {
@@ -111,6 +128,7 @@ struct GameData {
         delete offsets;
         delete physics;
         delete probabilities;
+        delete others;
     };
 
     void setWinSize(int width, int height) {
@@ -125,6 +143,7 @@ struct GameData {
     Offsets* offsets = new Offsets();
     Physics* physics = new Physics();
     Probabilities* probabilities = new Probabilities();
+    Others* others = new Others();
 };
 
 #endif

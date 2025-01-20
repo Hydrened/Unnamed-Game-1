@@ -8,6 +8,13 @@ LevelPos LevelPos::operator+(const LevelPos& other) const {
     return res;
 }
 
+LevelPos LevelPos::operator+(const LevelVelocity& other) const {
+    LevelPos res = *this;
+    res.x += other.x;
+    res.y += other.y;
+    return res;
+}
+
 LevelPos LevelPos::operator-(const LevelPos& other) const {
     LevelPos res = *this;
     res.x -= other.x;
@@ -59,6 +66,22 @@ LevelRect LevelSize::makeRect(LevelPos pos) const {
 }
 
 
+
+// LEVEL VELOCITY
+bool LevelVelocity::isNull() const {
+    return (x == 0.0f && y == 0.0f);
+}
+
+LevelVelocity LevelVelocity::operator*(const float& other) const {
+    LevelVelocity res = *this;
+    res.x *= other;
+    res.y *= other;
+    return res;
+}
+
+bool LevelVelocity::operator>(const LevelVelocity& other) const {
+    return (std::abs(x) + std::abs(y) > std::abs(other.x) + std::abs(other.y));
+}
 
 // LEVEL RECT
 LevelRect LevelRect::operator+(const LevelPos& other) const {
@@ -113,6 +136,11 @@ std::ostream& operator<<(std::ostream& os, const LevelPos& pos) {
 
 std::ostream& operator<<(std::ostream& os, const LevelSize& size) {
     os << "w: " << size.w << " h: " << size.h;
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const LevelVelocity& velocity) {
+    os << "x: " << velocity.x << " y: " << velocity.y;
     return os;
 }
 

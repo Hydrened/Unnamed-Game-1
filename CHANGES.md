@@ -1,3 +1,8 @@
+## 1.0.2
+#### ADDED
+- xp drop
+- xp merging
+
 ## 1.0.1
 #### ADDED
 - weapons

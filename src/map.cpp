@@ -13,7 +13,7 @@ Map::Map(Game* g) : game(g) {
 }
 
 void Map::initPlayer() {
-    static std::unordered_map<int, EntityData> entities = game->getData()->entities;
+    static std::unordered_map<int, EntityData> entities = game->getData()->others->entities;
     player = new Player(game, this, { 0.25f, 0.25f }, entities[0]);
 }
 
@@ -102,7 +102,7 @@ void Map::summonEnemy(int id, float sizeMultiplier) {
 }
 
 void Map::summonEnemy(int id, LevelPos pos, float sizeMultiplier) {
-    static std::unordered_map<int, EntityData> entities = game->getData()->entities;
+    static std::unordered_map<int, EntityData> entities = game->getData()->others->entities;
     enemies.push_back(new Enemy(game, this, pos, entities[id]));
 }
 
@@ -129,7 +129,21 @@ void Map::displayHitbox(LevelRect hitbox, H2DE_RGB color) {
 }
 
 void Map::killEnemy(Enemy* enemy) {
-    if (std::find(enemiesToRemove.begin(), enemiesToRemove.end(), enemy) == enemiesToRemove.end()) enemiesToRemove.push_back(enemy);
+    if (std::find(enemiesToRemove.begin(), enemiesToRemove.end(), enemy) != enemiesToRemove.end()) return;
+    enemiesToRemove.push_back(enemy);
+}
+
+void Map::dropXp(LevelPos pos, int level) {
+    static int maxXpLevel = game->getData()->others->maxXpLevel;
+
+    int i = maxXpLevel;
+    while (i != 0) {
+        if (level >= i) {
+            Xp* xp = new Xp(game, pos, i);
+            xps.push_back(xp);
+            level -= i;
+        } else i--;
+    }
 }
 
 // UPDATE
@@ -140,6 +154,7 @@ void Map::update() {
     camera->update();
     generate();
     updateEnemies();
+    updateXps();
 }
 
 void Map::updateEnemies() {
@@ -157,12 +172,52 @@ void Map::updateEnemies() {
     enemiesToRemove.clear();
 }
 
+void Map::updateXps() {
+    static LevelRect defaultXpHitbox = game->getData()->physics->xpHitbox;
+
+    for (Xp* xp : xps) {
+        xp->update();
+
+        LevelRect xp1Hitbox = defaultXpHitbox + xp->getPos();
+
+        for (Xp* xp2 : xps) {
+            if (xp == xp2) continue;
+            if (std::find(xpsToRemove.begin(), xpsToRemove.end(), xp2) != xpsToRemove.end()) continue;
+            if (xp->getLevel() >= 5) continue;
+            if (xp->getLevel() != xp2->getLevel()) continue;
+
+            LevelRect xp2Hitbox = defaultXpHitbox + xp2->getPos();
+            if (xp1Hitbox.collides(xp2Hitbox) == NONE) continue;
+
+            if (xp->getVelocity() > xp2->getVelocity()) {
+                xp->increaseLevel();
+                xpsToRemove.push_back(xp2);
+            } else {
+                xp2->increaseLevel();
+                xpsToRemove.push_back(xp);
+            }
+            break;
+        }
+    }
+
+    for (Xp* xp : xpsToRemove) {
+        auto it = std::find(xps.begin(), xps.end(), xp);
+        if (it != xps.end()) {
+            delete *it;
+            xps.erase(it);
+        }
+    }
+    xpsToRemove.clear();
+}
+
 // RENDER
 void Map::render() {
     player->render();
     renderAntiLineBug();
     renderTiles();
     for (Enemy* enemy : enemies) enemy->render();
+    for (Xp* xp : xps) xp->render();
+
 }
 
 void Map::renderAntiLineBug() {
@@ -199,16 +254,16 @@ void Map::renderTiles() {
     static std::unordered_map<std::string, LevelRect> decorationHitboxes = gameData->physics->decorationHitboxes;
     for (const auto& [pos, tile] : tiles) {
 
-        LevelSize groundTextureSize = texturesSizes[tile->ground.name];
-        LevelPos groundTexturePos = pos + texturesOffsets[tile->ground.name];
+        LevelPos groundTexturePos = pos + texturesOffsets[tile->ground];
+        LevelSize groundTextureSize = texturesSizes[tile->ground];
 
         if (camera->contains(groundTexturePos.makeRect(groundTextureSize))) {
             H2DE_GraphicObject* ground = H2DE_CreateGraphicObject();
             ground->type = IMAGE;
-            ground->texture = tile->ground.name;
+            ground->texture = tile->ground;
             ground->pos = cal->convertToPx(groundTexturePos);
             ground->size = cal->convertToPx(groundTextureSize);
-            ground->flip = tile->ground.flip;
+            ground->flip = (tile->fliped) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
             ground->index = getIndex(pos.y, 0);
             H2DE_AddGraphicObject(engine, ground);
 
@@ -217,20 +272,20 @@ void Map::renderTiles() {
 
         if (!tile->decoration.has_value()) continue;
 
-        LevelSize decorationTextureSize = texturesSizes[tile->decoration.value().name];
-        LevelPos decorationTexturePos = pos + texturesOffsets[tile->decoration.value().name];
+        LevelPos decorationTexturePos = pos + texturesOffsets[tile->decoration.value()];
+        LevelSize decorationTextureSize = texturesSizes[tile->decoration.value()];
 
         if (camera->contains(decorationTexturePos.makeRect(decorationTextureSize))) {
             H2DE_GraphicObject* decoration = H2DE_CreateGraphicObject();
             decoration->type = IMAGE;
-            decoration->texture = tile->decoration.value().name;
+            decoration->texture = tile->decoration.value();
             decoration->pos = cal->convertToPx(decorationTexturePos);
             decoration->size = cal->convertToPx(decorationTextureSize);
-            decoration->flip = tile->decoration.value().flip;
-            decoration->index = getIndex(pos.y, 2);
+            decoration->flip = (tile->fliped) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+            decoration->index = getIndex(pos.y, 5);
             H2DE_AddGraphicObject(engine, decoration);
 
-            displayHitbox(decorationHitboxes[tile->decoration.value().name] + pos, { 0, 0, 255, 255 });
+            displayHitbox(decorationHitboxes[tile->decoration.value()] + pos, { 0, 0, 255, 255 });
         }
     }
 }

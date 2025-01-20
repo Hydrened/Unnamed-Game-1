@@ -19,6 +19,8 @@ bool Enemy::isNearPlayer() {
 
 void Enemy::kill() {
     Map* map = game->getMap();
+
+    map->dropXp(pos, data.xpLevel);
     map->killEnemy(this);
 }
 
@@ -35,7 +37,7 @@ void Enemy::updateForPlayer() {
         LevelPos playerPos = map->getPlayer()->getPos();
 
         float angle = std::atan2(playerPos.y - pos.y, playerPos.x - pos.x);
-        LevelPos velocity = { data.stats.speed * std::cos(angle), data.stats.speed * std::sin(angle) };
+        LevelVelocity velocity = { data.stats.speed * std::cos(angle), data.stats.speed * std::sin(angle) };
         pos = pos + velocity;
 
         if (velocity.x != 0) facing = (velocity.x > 0) ? RIGHT : LEFT;

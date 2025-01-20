@@ -1,7 +1,7 @@
 #include "entity.h"
 
 // INIT
-Entity::Entity(Game* g, Map* m, LevelPos p, EntityData d) : game(g), map(m), pos(p), data(d), sprite(new Sprite(g, d.texture.name, 200)) {
+Entity::Entity(Game* g, Map* m, LevelPos p, EntityData d) : game(g), map(m), pos(p), data(d), sprite(new Sprite(g, d.texture, 200)) {
 
 }
 
@@ -13,7 +13,7 @@ Entity::~Entity() {
 // EVENT
 void Entity::equipWeapon(int id) {
     if (weapon) delete weapon;
-    static std::unordered_map<int, WeaponData> weapons = game->getData()->weapons;
+    static std::unordered_map<int, WeaponData> weapons = game->getData()->others->weapons;
     weapon = new Weapon(game, this, weapons[id]);
 }
 
@@ -47,8 +47,8 @@ void Entity::renderTexture() {
     static Calculator* cal = game->getCalculator();
     static GameData* gameData = game->getData();
 
-    static LevelSize textureSize = gameData->sizes->textures[data.texture.name];
-    static LevelPos textureOffset = gameData->offsets->textures[data.texture.name];
+    static LevelSize textureSize = gameData->sizes->textures[data.texture];
+    static LevelPos textureOffset = gameData->offsets->textures[data.texture];
 
     H2DE_GraphicObject* entitySprite = H2DE_CreateGraphicObject();
     entitySprite->type = IMAGE;
@@ -56,7 +56,7 @@ void Entity::renderTexture() {
     entitySprite->pos = cal->convertToPx(pos + textureOffset);
     entitySprite->size = cal->convertToPx(textureSize);
     if (facing == RIGHT) entitySprite->flip = SDL_FLIP_HORIZONTAL;
-    entitySprite->index = getIndex(std::ceil(pos.y), 1);
+    entitySprite->index = getIndex(std::ceil(pos.y), 4);
     H2DE_AddGraphicObject(engine, entitySprite);
 
     map->displayHitbox(data.hitbox + pos, { 255, 0, 0, 255 });

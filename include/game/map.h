@@ -3,9 +3,11 @@
 
 #include "game.h"
 #include "entity.h"
+#include "xp.h"
 class Game;
 class Player;
 class Enemy;
+class Xp;
 
 class Map {
 private:
@@ -14,7 +16,10 @@ private:
     Player* player = nullptr;
     std::vector<Enemy*> enemies;
     std::vector<Enemy*> enemiesToRemove;
+    std::vector<Xp*> xps;
+    std::vector<Xp*> xpsToRemove;
     std::unordered_map<LevelPos, Tile*, LevelPosHash> tiles;
+
     H2DE_TimelineManager* tm = H2DE_CreateTimelineManager();
 
     void initPlayer();
@@ -26,6 +31,7 @@ private:
     void summonEnemy(int id, LevelPos pos, float sizeMultiplier);
 
     void updateEnemies();
+    void updateXps();
     void renderAntiLineBug();
     void renderTiles();
 
@@ -38,6 +44,7 @@ public:
 
     void displayHitbox(LevelRect hitbox, H2DE_RGB color);
     void killEnemy(Enemy* enemy);
+    void dropXp(LevelPos pos, int level);
 
     Player* getPlayer() const;
     std::unordered_map<LevelPos, Tile*, LevelPosHash>* getTiles();

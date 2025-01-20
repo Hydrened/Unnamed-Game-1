@@ -9,6 +9,7 @@
 #include <SDL2/SDL_render.h>
 struct LevelRect;
 struct LevelSize;
+struct LevelVelocity;
 
 enum GameState {
     MAIN_MENU,
@@ -33,6 +34,7 @@ struct LevelPos {
     float y;
 
     LevelPos operator+(const LevelPos& other) const;
+    LevelPos operator+(const LevelVelocity& other) const;
     LevelPos operator-(const LevelPos& other) const;
     LevelPos operator/(const int& other) const;
     bool operator==(const LevelPos& other) const;
@@ -55,6 +57,10 @@ struct LevelSize {
 struct LevelVelocity {
     float x;
     float y;
+
+    bool isNull() const;
+    LevelVelocity operator*(const float& other) const;
+    bool operator>(const LevelVelocity& other) const;
 };
 
 struct LevelRect {
@@ -70,14 +76,10 @@ struct LevelRect {
     LevelPos getCenter() const;
 };
 
-struct Texture {
-    std::string name;
-    SDL_RendererFlip flip;
-};
-
 struct Tile {
-    Texture ground;
-    std::optional<Texture> decoration;
+    std::string ground;
+    std::optional<std::string> decoration;
+    bool fliped;
 };
 
 struct TextureProbability {
@@ -96,13 +98,14 @@ struct EntityStats {
 };
 
 struct EntityData {
-    Texture texture;
+    std::string texture;
     LevelRect hitbox;
+    int xpLevel;
     EntityStats stats;
 };
 
 struct BulletData {
-    Texture texture;
+    std::string texture;
     LevelSize size;
     float speed;
     float damage;
@@ -112,13 +115,14 @@ struct BulletData {
 
 struct WeaponData {
     std::string name;
-    Texture texture;
+    std::string texture;
     int delay;
     BulletData bullet;
 };
 
 std::ostream& operator<<(std::ostream& os, const LevelPos& pos);
 std::ostream& operator<<(std::ostream& os, const LevelSize& size);
+std::ostream& operator<<(std::ostream& os, const LevelVelocity& velocity);
 std::ostream& operator<<(std::ostream& os, const LevelRect& rect);
 
 #endif

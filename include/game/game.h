@@ -30,7 +30,7 @@ private:
 
     GameData* data = new GameData();
     GameState state = MAIN_MENU;
-    bool debugMode = false;
+    bool debugMode = true;
 
     Calculator* calculator = nullptr;
     Camera* camera = nullptr;

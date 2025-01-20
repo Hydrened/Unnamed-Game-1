@@ -2,7 +2,7 @@
 
 // INIT
 Bullet::Bullet(Game* g, Weapon* w, BulletData d, float a) : game(g), weapon(w), data(d), angle(a) {
-    static LevelRect playerHitbox = game->getData()->entities[0].hitbox;
+    static LevelRect playerHitbox = game->getData()->others->entities[0].hitbox;
     LevelPos playerPos = game->getMap()->getPlayer()->getPos();
 
     LevelPos playerCenter = (playerHitbox + playerPos).getCenter();
@@ -30,7 +30,7 @@ void Bullet::updatePos() {
     static Camera* camera = game->getCamera();
     LevelPos camPos = camera->getPos();
 
-    LevelPos velocity = { data.speed * std::cos(angle), data.speed * std::sin(angle) };
+    LevelVelocity velocity = { data.speed * std::cos(angle), data.speed * std::sin(angle) };
     pos = pos + velocity;
 
     if (!camera->contains(pos.makeRect(data.size))) destroy();
@@ -61,10 +61,10 @@ void Bullet::render() {
 
     H2DE_GraphicObject* bulletSprite = H2DE_CreateGraphicObject();
     bulletSprite->type = IMAGE;
-    bulletSprite->texture = data.texture.name;
+    bulletSprite->texture = data.texture;
     bulletSprite->pos = cal->convertToPx(pos);
     bulletSprite->size = cal->convertToPx(data.size);
-    bulletSprite->index = getIndex(std::ceil(pos.y), 5);
+    bulletSprite->index = getIndex(std::ceil(pos.y), 3);
     H2DE_AddGraphicObject(engine, bulletSprite);
 
     game->getMap()->displayHitbox(data.size.makeRect(pos), { 255, 0, 0, 255 });
