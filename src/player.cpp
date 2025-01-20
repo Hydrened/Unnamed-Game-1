@@ -15,6 +15,11 @@ void Player::kill() {
     
 }
 
+void Player::increaseXp(int level) {
+    xp += level;
+    std::cout << xp << std::endl;
+}
+
 // UPDATE
 void Player::update() {
     LevelPos defaultPos = pos;
@@ -24,6 +29,7 @@ void Player::update() {
     updateFacing();
     updateAnimation(defaultPos);
     updateWeapon();
+    updateForXp();
 }
 
 void Player::updateForControls() {
@@ -54,7 +60,7 @@ void Player::updateForWorldCollisions() {
     static std::unordered_map<std::string, LevelRect> decorationHitboxes = gameData->physics->decorationHitboxes;
     LevelRect playerHitbox = data.hitbox + pos;
 
-    for (const auto& [tilePos, tile] : game->getMap()->getPerimeter({ pos.x + playerHitbox.w / 2, pos.y + playerHitbox.h / 2 }, true)) {
+    for (const auto& [tilePos, tile] : map->getPerimeter({ pos.x + playerHitbox.w / 2, pos.y + playerHitbox.h / 2 }, true)) {
         if (!tile->decoration.has_value()) continue;
         if (decorationHitboxes.find(tile->decoration.value()) == decorationHitboxes.end()) continue;
 
@@ -82,4 +88,17 @@ void Player::updateFacing() {
 
 void Player::updateAnimation(LevelPos defaultPos) {
     sprite->setAnimation((defaultPos == pos) ? IDLE : WALK); 
+}
+
+void Player::updateForXp() {
+    static LevelRect defaultPlayerHitbox = game->getData()->others->entities[0].hitbox;
+    static LevelRect defaultXpHitbox = game->getData()->physics->xpHitbox;
+    LevelPos playerPosCenter = (defaultPlayerHitbox + pos).getCenter();
+
+    for (Xp* xp : map->getXps()) {
+        LevelPos xpPosCenter = (defaultXpHitbox + xp->getPos()).getCenter();
+        LevelPos posDistance = playerPosCenter - xpPosCenter;
+        float distanceWithXp = std::abs(posDistance.x) + std::abs(posDistance.y);
+        if (distanceWithXp <= data.stats.pickup) xp->pickUp();
+    }
 }

@@ -61,6 +61,7 @@ struct GameData {
     struct Physics {
         float critDamageMultiplier = 1.5f;
         float airResistance = 0.05f;
+        float xpSpeed = 0.1f;
 
         LevelRect xpHitbox = { 0.0f, 0.0f, 0.75f, 0.5f };
 
@@ -97,16 +98,16 @@ struct GameData {
                 50.0f,  /*< health */
                 0.0f,   /*< attack */
                 0.0f,   /*< defence */
-                0.1f,   /*< speed */
+                0.05f,   /*< speed */
                 0.0f,   /*< crit */
-                0.0f,   /*< pickup */
+                1.5f,   /*< pickup */
                 0.0f,   /*< regeneration */
             }}},
             { 1, { "player.png", { 0.0f, 0.0f, 0.5f, 0.5f }, 1, {
                 10.0f,  /*< health */
                 0.0f,   /*< attack */
                 0.0f,   /*< defence */
-                0.05f,  /*< speed */
+                0.01f,  /*< speed */
                 0.0f,   /*< crit */
                 0.0f,   /*< pickup */
                 0.0f,   /*< regeneration */

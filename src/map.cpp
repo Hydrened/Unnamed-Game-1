@@ -173,30 +173,42 @@ void Map::updateEnemies() {
 }
 
 void Map::updateXps() {
-    static LevelRect defaultXpHitbox = game->getData()->physics->xpHitbox;
+    static GameData* gameData = game->getData();
+    static LevelRect defaultXpHitbox = gameData->physics->xpHitbox;
+    static LevelRect defaultPlayerHitbox = game->getData()->others->entities[0].hitbox;
+    static int maxXpLevel = gameData->others->maxXpLevel;
+    LevelPos playerPos = player->getPos();
 
     for (Xp* xp : xps) {
         xp->update();
-
         LevelRect xp1Hitbox = defaultXpHitbox + xp->getPos();
 
-        for (Xp* xp2 : xps) {
-            if (xp == xp2) continue;
-            if (std::find(xpsToRemove.begin(), xpsToRemove.end(), xp2) != xpsToRemove.end()) continue;
-            if (xp->getLevel() >= 5) continue;
-            if (xp->getLevel() != xp2->getLevel()) continue;
-
-            LevelRect xp2Hitbox = defaultXpHitbox + xp2->getPos();
-            if (xp1Hitbox.collides(xp2Hitbox) == NONE) continue;
-
-            if (xp->getVelocity() > xp2->getVelocity()) {
-                xp->increaseLevel();
-                xpsToRemove.push_back(xp2);
-            } else {
-                xp2->increaseLevel();
+        if (xp->isPickedUp()) {
+            LevelRect playerHitbox = defaultPlayerHitbox + player->getPos();
+            if (playerHitbox.collides(xp1Hitbox) != NONE) {
                 xpsToRemove.push_back(xp);
+                player->increaseXp(xp->getLevel());
             }
-            break;
+
+        } else {
+            for (Xp* xp2 : xps) {
+                if (xp == xp2) continue;
+                if (std::find(xpsToRemove.begin(), xpsToRemove.end(), xp2) != xpsToRemove.end()) continue;
+                if (xp->getLevel() >= maxXpLevel) continue;
+                if (xp->getLevel() != xp2->getLevel()) continue;
+
+                LevelRect xp2Hitbox = defaultXpHitbox + xp2->getPos();
+                if (xp1Hitbox.collides(xp2Hitbox) == NONE) continue;
+
+                if (xp->getVelocity() > xp2->getVelocity()) {
+                    xp->increaseLevel();
+                    xpsToRemove.push_back(xp2);
+                } else {
+                    xp2->increaseLevel();
+                    xpsToRemove.push_back(xp);
+                }
+                break;
+            }
         }
     }
 
@@ -325,4 +337,8 @@ std::unordered_map<LevelPos, Tile*, LevelPosHash> Map::getPerimeter(LevelPos pos
 
 std::vector<Enemy*> Map::getEnemies() const {
     return enemies;
+}
+
+std::vector<Xp*> Map::getXps() const {
+    return xps;
 }

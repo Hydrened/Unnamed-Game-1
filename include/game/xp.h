@@ -11,6 +11,7 @@ private:
 
     LevelPos pos;
     LevelVelocity velocity;
+    bool pickedUp = false;
 
 public:
     Xp(Game* game, LevelPos pos, int level);
@@ -20,10 +21,12 @@ public:
     void render();
 
     void increaseLevel();
+    void pickUp();
 
     LevelPos getPos() const;
     LevelVelocity getVelocity() const;
     int getLevel() const;
+    bool isPickedUp() const;
 };
 
 #endif

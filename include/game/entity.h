@@ -43,15 +43,20 @@ public:
 
 class Player : public Entity {
 private:
+    int xp = 0;
+
     void updateForControls();
     void updateForWorldCollisions();
     void updateAnimation(LevelPos defaultPos);
     void updateFacing();
+    void updateForXp();
     void kill() override;
 
 public:
     Player(Game* game, Map* map, LevelPos pos, EntityData data);
     ~Player() override;
+
+    void increaseXp(int level);
 
     void update() override;
 };

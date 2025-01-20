@@ -16,22 +16,35 @@ void Xp::increaseLevel() {
     if (level < 5) level++;
 }
 
+void Xp::pickUp() {
+    pickedUp = true;
+}
+
 // UPDATE
 void Xp::update() {
     static float airResistance = game->getData()->physics->airResistance;
+    static float xpSpeed = game->getData()->physics->xpSpeed;
 
-    if (velocity.isNull()) return;
+    if (!pickedUp) {
+        if (velocity.isNull()) return;
 
-    if (velocity.x != 0.0f) {
-        if (velocity.x < 0.0f) velocity.x = std::min(0.0f, velocity.x + airResistance);
-        else velocity.x = std::max(0.0f, velocity.x - airResistance);
+        if (velocity.x != 0.0f) {
+            if (velocity.x < 0.0f) velocity.x = std::min(0.0f, velocity.x + airResistance);
+            else velocity.x = std::max(0.0f, velocity.x - airResistance);
+        }
+        if (velocity.y != 0.0f) {
+            if (velocity.y < 0.0f) velocity.y = std::min(0.0f, velocity.y + airResistance);
+            else velocity.y = std::max(0.0f, velocity.y - airResistance);
+        }
+
+        pos = pos + velocity * (xpSpeed / 2);
+    } else {
+        LevelPos playerPos = game->getMap()->getPlayer()->getPos();
+
+        float angle = std::atan2(playerPos.y - pos.y, playerPos.x - pos.x);
+        velocity = { std::cos(angle), std::sin(angle) };
+        pos = pos + velocity * xpSpeed;
     }
-    if (velocity.y != 0.0f) {
-        if (velocity.y < 0.0f) velocity.y = std::min(0.0f, velocity.y + airResistance);
-        else velocity.y = std::max(0.0f, velocity.y - airResistance);
-    }
-
-    pos = pos + velocity * 0.1f;
 }
 
 // RENDER
@@ -75,4 +88,8 @@ LevelVelocity Xp::getVelocity() const {
 
 int Xp::getLevel() const {
     return level;
+}
+
+bool Xp::isPickedUp() const {
+    return pickedUp;
 }

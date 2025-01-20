@@ -70,6 +70,7 @@ struct LevelRect {
     float h;
 
     LevelRect operator+(const LevelPos& other) const;
+    LevelRect operator+(const float& other) const;
     Face collides(const LevelRect& other) const;
     LevelPos getPos() const;
     LevelSize getSize() const;

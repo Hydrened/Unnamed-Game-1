@@ -50,6 +50,7 @@ public:
     std::unordered_map<LevelPos, Tile*, LevelPosHash>* getTiles();
     std::unordered_map<LevelPos, Tile*, LevelPosHash> getPerimeter(LevelPos pos, bool withCenter);
     std::vector<Enemy*> getEnemies() const;
+    std::vector<Xp*> getXps() const;
 };
 
 #endif

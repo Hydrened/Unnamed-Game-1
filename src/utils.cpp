@@ -91,6 +91,15 @@ LevelRect LevelRect::operator+(const LevelPos& other) const {
     return res;
 }
 
+LevelRect LevelRect::operator+(const float& other) const {
+    LevelRect res = *this;
+    res.x -= other;
+    res.y -= other;
+    res.w += other * 2.0f;
+    res.h += other * 2.0f;
+    return res;
+}
+
 Face LevelRect::collides(const LevelRect& other) const {
     bool collides = (
         other.x + other.w >= x &&

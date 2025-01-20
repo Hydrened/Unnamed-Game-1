@@ -1,3 +1,7 @@
+## 1.0.3
+#### ADDED
+- picking xp up
+
 ## 1.0.2
 #### ADDED
 - xp drop
