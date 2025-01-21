@@ -2,7 +2,7 @@
 
 // INIT
 Player::Player(Game* g, Map* m, LevelPos p, EntityData d) : Entity(g, m, p, d) {
-    equipWeapon(0);
+    equipWeapon(1);
 }
 
 // CLEANUP
@@ -91,11 +91,14 @@ void Player::updateAnimation(LevelPos defaultPos) {
 }
 
 void Player::updateForXp() {
-    static LevelRect defaultPlayerHitbox = game->getData()->others->entities[0].hitbox;
-    static LevelRect defaultXpHitbox = game->getData()->physics->xpHitbox;
+    static GameData* gameData = game->getData();
+    static std::unordered_map<std::string, LevelRect> itemHitobxes = gameData->physics->itemHitobxes;
+    static LevelRect defaultPlayerHitbox = gameData->others->entities[0].hitbox;
+
     LevelPos playerPosCenter = (defaultPlayerHitbox + pos).getCenter();
 
     for (Xp* xp : map->getXps()) {
+        LevelRect defaultXpHitbox = itemHitobxes[xp->getTexture()];
         LevelPos xpPosCenter = (defaultXpHitbox + xp->getPos()).getCenter();
         LevelPos posDistance = playerPosCenter - xpPosCenter;
         float distanceWithXp = std::abs(posDistance.x) + std::abs(posDistance.y);

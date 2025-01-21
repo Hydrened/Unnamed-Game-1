@@ -33,6 +33,10 @@ std::string Sprite::getTexture() const {
 }
 
 // SETTER
+void Sprite::setTexture(std::string texture) {
+    textureName = texture;
+}
+
 void Sprite::setAnimation(SpriteAnimation animation) {
     if (currentAnimation != animation) currentSpriteFrame = 1;
     currentAnimation = animation;

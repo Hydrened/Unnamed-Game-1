@@ -3,11 +3,12 @@
 
 #include "game.h"
 #include "entity.h"
-#include "xp.h"
+#include "item.h"
 class Game;
 class Player;
 class Enemy;
 class Xp;
+class Coin;
 
 class Map {
 private:
@@ -18,6 +19,8 @@ private:
     std::vector<Enemy*> enemiesToRemove;
     std::vector<Xp*> xps;
     std::vector<Xp*> xpsToRemove;
+    std::vector<Coin*> coins;
+    std::vector<Coin*> coinsToRemove;
     std::unordered_map<LevelPos, Tile*, LevelPosHash> tiles;
 
     H2DE_TimelineManager* tm = H2DE_CreateTimelineManager();

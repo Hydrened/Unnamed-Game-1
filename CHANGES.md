@@ -1,6 +1,16 @@
+## 1.0.4
+#### ADDED
+- piercing bullets losing damage for each entity collision
+- xp level 6 (32 xp)
+#### FIXED
+- ground tile texture not rendering
+#### LIB
+- updated from H2DE-1.3.15-b1 to H2DE-1.3.15
+
 ## 1.0.3
 #### ADDED
 - picking xp up
+- pickup range
 
 ## 1.0.2
 #### ADDED

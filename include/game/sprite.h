@@ -26,6 +26,7 @@ public:
 
     std::string getTexture() const;
 
+    void setTexture(std::string texture);
     void setAnimation(SpriteAnimation animation);
 };
 

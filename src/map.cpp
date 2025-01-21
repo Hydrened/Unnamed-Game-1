@@ -53,13 +53,12 @@ void Map::generateTile(LevelPos pos) {
     static float haveDecorationPorbabily = gameData->probabilities->haveDecoration;
     static float nearSpawnDistance = gameData->sizes->nearSpawnDistance;
 
-    std::string randomGround = getRandomTexture(groundProbabilities);
-    std::string randomDecoration = getRandomTexture(decorationProbabilities);
     bool haveDecoration = rand(haveDecorationPorbabily);
     bool nearSpawn = (std::abs(pos.x) <= nearSpawnDistance && std::abs(pos.y) <= nearSpawnDistance);
 
     Tile* tile = new Tile();
-    tile->ground = { randomGround, getRandomFlipX() };
+    tile->ground = getRandomTexture(groundProbabilities);
+    tile->fliped = getRandomBool();
 
     if (haveDecoration && !nearSpawn) {
         bool haveDecorationNear = false;
@@ -69,7 +68,7 @@ void Map::generateTile(LevelPos pos) {
                 break;
             }
         }
-        if (!haveDecorationNear) tile->decoration = { randomDecoration, getRandomFlipX() };
+        if (!haveDecorationNear) tile->decoration = getRandomTexture(decorationProbabilities);
     }
 
     tiles[pos] = tile;
@@ -174,13 +173,14 @@ void Map::updateEnemies() {
 
 void Map::updateXps() {
     static GameData* gameData = game->getData();
-    static LevelRect defaultXpHitbox = gameData->physics->xpHitbox;
+    static std::unordered_map<std::string, LevelRect> itemHitobxes = gameData->physics->itemHitobxes;
     static LevelRect defaultPlayerHitbox = game->getData()->others->entities[0].hitbox;
     static int maxXpLevel = gameData->others->maxXpLevel;
     LevelPos playerPos = player->getPos();
 
     for (Xp* xp : xps) {
         xp->update();
+        LevelRect defaultXpHitbox = itemHitobxes[xp->getTexture()];
         LevelRect xp1Hitbox = defaultXpHitbox + xp->getPos();
 
         if (xp->isPickedUp()) {
@@ -197,7 +197,8 @@ void Map::updateXps() {
                 if (xp->getLevel() >= maxXpLevel) continue;
                 if (xp->getLevel() != xp2->getLevel()) continue;
 
-                LevelRect xp2Hitbox = defaultXpHitbox + xp2->getPos();
+                LevelRect defaultXp2Hitbox = itemHitobxes[xp2->getTexture()];
+                LevelRect xp2Hitbox = defaultXp2Hitbox + xp2->getPos();
                 if (xp1Hitbox.collides(xp2Hitbox) == NONE) continue;
 
                 if (xp->getVelocity() > xp2->getVelocity()) {
@@ -229,7 +230,6 @@ void Map::render() {
     renderTiles();
     for (Enemy* enemy : enemies) enemy->render();
     for (Xp* xp : xps) xp->render();
-
 }
 
 void Map::renderAntiLineBug() {
@@ -297,7 +297,8 @@ void Map::renderTiles() {
             decoration->index = getIndex(pos.y, 5);
             H2DE_AddGraphicObject(engine, decoration);
 
-            displayHitbox(decorationHitboxes[tile->decoration.value()] + pos, { 0, 0, 255, 255 });
+            auto it = decorationHitboxes.find(tile->decoration.value());
+            if (it != decorationHitboxes.end()) displayHitbox(decorationHitboxes[tile->decoration.value()] + pos, { 0, 0, 255, 255 });
         }
     }
 }

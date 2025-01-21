@@ -32,6 +32,7 @@ struct GameData {
             { "xp-lvl-3.png", { 0.8f, 0.8f } },
             { "xp-lvl-4.png", { 0.8f, 0.8f } },
             { "xp-lvl-5.png", { 0.8f, 0.8f } },
+            { "xp-lvl-6.png", { 0.8f, 0.8f } },
         };
     };
 
@@ -55,16 +56,24 @@ struct GameData {
             { "xp-lvl-3.png", { 0.0f, -0.1f } },
             { "xp-lvl-4.png", { 0.0f, -0.1f } },
             { "xp-lvl-5.png", { 0.0f, -0.1f } },
+            { "xp-lvl-6.png", { 0.0f, -0.1f } },
         };
     };
 
     struct Physics {
         float critDamageMultiplier = 1.5f;
         float airResistance = 0.05f;
-        float xpSpeed = 0.1f;
+        float itemSpeed = 0.1f;
+        float piercingDamageMultiplier = 0.8f;
 
-        LevelRect xpHitbox = { 0.0f, 0.0f, 0.75f, 0.5f };
-
+        std::unordered_map<std::string, LevelRect> itemHitobxes = {
+            { "xp-lvl-1.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
+            { "xp-lvl-2.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
+            { "xp-lvl-3.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
+            { "xp-lvl-4.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
+            { "xp-lvl-5.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
+            { "xp-lvl-6.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
+        };
         std::unordered_map<std::string, LevelRect> decorationHitboxes = {
             { "tree-1.png", { 0.15f, 0.25f, 0.7f, 0.5f } },
             { "tree-2.png", { 0.15f, 0.25f, 0.7f, 0.5f } },
@@ -91,7 +100,7 @@ struct GameData {
     };
 
     struct Others {
-        int maxXpLevel = 5;
+        int maxXpLevel = 6;
 
         std::unordered_map<int, EntityData> entities = {
             { 0, { "player.png", { 0.0f, 0.0f, 0.5f, 0.5f }, 0, {
@@ -117,7 +126,12 @@ struct GameData {
         std::unordered_map<int, WeaponData> weapons = {
             { 0, { "9mm", "weapon.png", 500, {
                 "player.png", { 0.15f, 0.15f },
-                    0.1f, 10.0f, false, false    /*< speed, damage, piercing, explosive */
+                    0.15f, 10.0f, false, false    /*< speed, damage, piercing, explosive */
+                }
+            }},
+            { 1, { "m4", "weapon.png", 200, {
+                "player.png", { 0.15f, 0.15f },
+                    0.2f, 5.0f, false, false    /*< speed, damage, piercing, explosive */
                 }
             }},
         };

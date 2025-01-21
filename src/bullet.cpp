@@ -37,6 +37,7 @@ void Bullet::updatePos() {
 }
 
 void Bullet::checkEntityCollisions() {
+    static float piercingDamageMultiplier = game->getData()->physics->piercingDamageMultiplier;
     Entity* user = weapon->getUser();
     LevelRect bulletHitbox = pos.makeRect(data.size);
 
@@ -50,7 +51,7 @@ void Bullet::checkEntityCollisions() {
         if (!data.piercing) {
             destroy();
             break;
-        }
+        } else data.damage *= piercingDamageMultiplier;
     }
 }
 

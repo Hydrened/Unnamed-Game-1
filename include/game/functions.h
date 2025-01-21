@@ -4,7 +4,7 @@
 #include "game.h"
 
 std::string getRandomTexture(std::vector<TextureProbability> textureProbabilities);
-SDL_RendererFlip getRandomFlipX();
+bool getRandomBool();
 int getIndex(float yPos, int index);
 bool rand(float value);
 float rand(float min, float max);

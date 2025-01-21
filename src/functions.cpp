@@ -3,7 +3,7 @@
 std::string getRandomTexture(std::vector<TextureProbability> textureProbabilities) {
     static std::random_device rd;
     static std::default_random_engine e(rd());
-    std::uniform_int_distribution<int> dist(0.0f, 100.0);
+    std::uniform_int_distribution<int> dist(0.0f, 100.0f);
 
     float percentage = dist(e);
     float total = 0.0f;
@@ -14,12 +14,12 @@ std::string getRandomTexture(std::vector<TextureProbability> textureProbabilitie
     return "";
 }
 
-SDL_RendererFlip getRandomFlipX() {
+bool getRandomBool() {
     static std::random_device rd;
     static std::default_random_engine e(rd());
     std::uniform_int_distribution<int> dist(0, 1);
 
-    return (dist(e) == 0) ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
+    return (dist(e) == 0);
 }
 
 int getIndex(float yPos, int index) {
