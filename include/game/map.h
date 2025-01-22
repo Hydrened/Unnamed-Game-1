@@ -7,8 +7,7 @@
 class Game;
 class Player;
 class Enemy;
-class Xp;
-class Coin;
+class Item;
 
 class Map {
 private:
@@ -17,10 +16,8 @@ private:
     Player* player = nullptr;
     std::vector<Enemy*> enemies;
     std::vector<Enemy*> enemiesToRemove;
-    std::vector<Xp*> xps;
-    std::vector<Xp*> xpsToRemove;
-    std::vector<Coin*> coins;
-    std::vector<Coin*> coinsToRemove;
+    std::vector<Item*> items;
+    std::vector<Item*> itemsToRemove;
     std::unordered_map<LevelPos, Tile*, LevelPosHash> tiles;
 
     H2DE_TimelineManager* tm = H2DE_CreateTimelineManager();
@@ -34,7 +31,7 @@ private:
     void summonEnemy(int id, LevelPos pos, float sizeMultiplier);
 
     void updateEnemies();
-    void updateXps();
+    void updateItems();
     void renderAntiLineBug();
     void renderTiles();
 
@@ -48,12 +45,15 @@ public:
     void displayHitbox(LevelRect hitbox, H2DE_RGB color);
     void killEnemy(Enemy* enemy);
     void dropXp(LevelPos pos, int level);
+    void dropCoin(LevelPos pos);
+    void removeItem(Item* item);
 
     Player* getPlayer() const;
     std::unordered_map<LevelPos, Tile*, LevelPosHash>* getTiles();
     std::unordered_map<LevelPos, Tile*, LevelPosHash> getPerimeter(LevelPos pos, bool withCenter);
     std::vector<Enemy*> getEnemies() const;
-    std::vector<Xp*> getXps() const;
+    std::vector<Item*> getItems() const;
+    bool hasToBeRemoved(Item* item);
 };
 
 #endif

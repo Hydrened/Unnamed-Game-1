@@ -11,8 +11,8 @@ private:
     Game* game;
     Weapon* weapon;
     BulletData data;
-    float angle;
     LevelPos pos;
+    LevelVelocity velocity;
 
     std::vector<Entity*> damagedEntities; 
 

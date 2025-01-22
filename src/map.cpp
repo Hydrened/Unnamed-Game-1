@@ -139,10 +139,18 @@ void Map::dropXp(LevelPos pos, int level) {
     while (i != 0) {
         if (level >= i) {
             Xp* xp = new Xp(game, pos, i);
-            xps.push_back(xp);
+            items.push_back(xp);
             level -= i;
         } else i--;
     }
+}
+
+void Map::dropCoin(LevelPos pos) {
+    items.push_back(new Coin(game, pos));
+}
+
+void Map::removeItem(Item* item) {
+    itemsToRemove.push_back(item);
 }
 
 // UPDATE
@@ -153,7 +161,7 @@ void Map::update() {
     camera->update();
     generate();
     updateEnemies();
-    updateXps();
+    updateItems();
 }
 
 void Map::updateEnemies() {
@@ -171,56 +179,13 @@ void Map::updateEnemies() {
     enemiesToRemove.clear();
 }
 
-void Map::updateXps() {
-    static GameData* gameData = game->getData();
-    static std::unordered_map<std::string, LevelRect> itemHitobxes = gameData->physics->itemHitobxes;
-    static LevelRect defaultPlayerHitbox = game->getData()->others->entities[0].hitbox;
-    static int maxXpLevel = gameData->others->maxXpLevel;
-    LevelPos playerPos = player->getPos();
-
-    for (Xp* xp : xps) {
-        xp->update();
-        LevelRect defaultXpHitbox = itemHitobxes[xp->getTexture()];
-        LevelRect xp1Hitbox = defaultXpHitbox + xp->getPos();
-
-        if (xp->isPickedUp()) {
-            LevelRect playerHitbox = defaultPlayerHitbox + player->getPos();
-            if (playerHitbox.collides(xp1Hitbox) != NONE) {
-                xpsToRemove.push_back(xp);
-                player->increaseXp(xp->getLevel());
-            }
-
-        } else {
-            for (Xp* xp2 : xps) {
-                if (xp == xp2) continue;
-                if (std::find(xpsToRemove.begin(), xpsToRemove.end(), xp2) != xpsToRemove.end()) continue;
-                if (xp->getLevel() >= maxXpLevel) continue;
-                if (xp->getLevel() != xp2->getLevel()) continue;
-
-                LevelRect defaultXp2Hitbox = itemHitobxes[xp2->getTexture()];
-                LevelRect xp2Hitbox = defaultXp2Hitbox + xp2->getPos();
-                if (xp1Hitbox.collides(xp2Hitbox) == NONE) continue;
-
-                if (xp->getVelocity() > xp2->getVelocity()) {
-                    xp->increaseLevel();
-                    xpsToRemove.push_back(xp2);
-                } else {
-                    xp2->increaseLevel();
-                    xpsToRemove.push_back(xp);
-                }
-                break;
-            }
-        }
+void Map::updateItems() {
+    for (Item* item : items) item->update();
+    for (Item* item : itemsToRemove) {
+        items.erase(std::find(items.begin(), items.end(), item));
+        delete item;
     }
-
-    for (Xp* xp : xpsToRemove) {
-        auto it = std::find(xps.begin(), xps.end(), xp);
-        if (it != xps.end()) {
-            delete *it;
-            xps.erase(it);
-        }
-    }
-    xpsToRemove.clear();
+    itemsToRemove.clear();
 }
 
 // RENDER
@@ -229,7 +194,7 @@ void Map::render() {
     renderAntiLineBug();
     renderTiles();
     for (Enemy* enemy : enemies) enemy->render();
-    for (Xp* xp : xps) xp->render();
+    for (Item* item : items) item->render();
 }
 
 void Map::renderAntiLineBug() {
@@ -340,6 +305,10 @@ std::vector<Enemy*> Map::getEnemies() const {
     return enemies;
 }
 
-std::vector<Xp*> Map::getXps() const {
-    return xps;
+std::vector<Item*> Map::getItems() const {
+    return items;
+}
+
+bool Map::hasToBeRemoved(Item* item) {
+    return (std::find(itemsToRemove.begin(), itemsToRemove.end(), item) != itemsToRemove.end());
 }

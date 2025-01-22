@@ -7,7 +7,7 @@ struct GameData {
     };
 
     struct Sizes {
-        float blocksOnWidth = 30.0f;
+        float blocksOnWidth = 20.0f;
         float blocksOnHeight = 0.0f;
         int winWidth = 0;
         int winHeight = 0;
@@ -17,6 +17,7 @@ struct GameData {
 
         std::unordered_map<std::string, LevelSize> textures = {
             { "player.png", { 1.0f, 1.0f } },
+            { "enemy.png", { 1.0f, 1.0f } },
             { "ground.png", { 1.0f, 1.0f } },
             { "ground-with-grass.png", { 1.0f, 1.0f } },
             { "log-1.png", { 1.0f, 1.0f } },
@@ -33,6 +34,7 @@ struct GameData {
             { "xp-lvl-4.png", { 0.8f, 0.8f } },
             { "xp-lvl-5.png", { 0.8f, 0.8f } },
             { "xp-lvl-6.png", { 0.8f, 0.8f } },
+            { "coin.png", { 0.8f, 0.8f } },
         };
     };
 
@@ -41,6 +43,7 @@ struct GameData {
 
         std::unordered_map<std::string, LevelPos> textures = {
             { "player.png", { -0.25f, -0.25f } },
+            { "enemy.png", { -0.25f, 0.0f } },
             { "ground.png", { 0.0f, 0.0f } },
             { "ground-with-grass.png", { 0.0f, 0.0f } },
             { "log-1.png", { 0.0f, 0.0f } },
@@ -57,6 +60,7 @@ struct GameData {
             { "xp-lvl-4.png", { 0.0f, -0.1f } },
             { "xp-lvl-5.png", { 0.0f, -0.1f } },
             { "xp-lvl-6.png", { 0.0f, -0.1f } },
+            { "coin.png", { -0.15f, 0.0f } },
         };
     };
 
@@ -66,13 +70,14 @@ struct GameData {
         float itemSpeed = 0.1f;
         float piercingDamageMultiplier = 0.8f;
 
-        std::unordered_map<std::string, LevelRect> itemHitobxes = {
+        std::unordered_map<std::string, LevelRect> itemHitboxes = {
             { "xp-lvl-1.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
             { "xp-lvl-2.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
             { "xp-lvl-3.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
             { "xp-lvl-4.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
             { "xp-lvl-5.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
             { "xp-lvl-6.png", { 0.0f, 0.0f, 0.75f, 0.5f } },
+            { "coin.png", { 0.0f, 0.0f, 0.5f, 0.75f } },
         };
         std::unordered_map<std::string, LevelRect> decorationHitboxes = {
             { "tree-1.png", { 0.15f, 0.25f, 0.7f, 0.5f } },
@@ -82,6 +87,7 @@ struct GameData {
 
     struct Probabilities {
         float haveDecoration = 10.0f;
+        float enemyDropingCoin = 5.0f;
 
         std::vector<TextureProbability> ground = {
             { 10.0f, "ground-with-grass.png" },
@@ -112,7 +118,7 @@ struct GameData {
                 1.5f,   /*< pickup */
                 0.0f,   /*< regeneration */
             }}},
-            { 1, { "player.png", { 0.0f, 0.0f, 0.5f, 0.5f }, 1, {
+            { 1, { "enemy.png", { 0.0f, 0.0f, 0.5f, 1.0f }, 1, {
                 10.0f,  /*< health */
                 0.0f,   /*< attack */
                 0.0f,   /*< defence */

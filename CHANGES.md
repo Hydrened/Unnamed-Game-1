@@ -1,3 +1,11 @@
+## 1.0.5
+#### ADDED
+- coin drop (+5)
+- +1 coin per enemy killed
+#### MODIFIED
+- enemy hitboxes
+- camera default zoom
+
 ## 1.0.4
 #### ADDED
 - piercing bullets losing damage for each entity collision

@@ -13,6 +13,7 @@ protected:
     Game* game;
     Map* map;
     LevelPos pos;
+    LevelVelocity velocity = { 0.0f, 0.0f };
     EntityData data;
     Sprite* sprite;
 
@@ -44,12 +45,13 @@ public:
 class Player : public Entity {
 private:
     int xp = 0;
+    int coins = 0;
 
     void updateForControls();
     void updateForWorldCollisions();
     void updateAnimation(LevelPos defaultPos);
     void updateFacing();
-    void updateForXp();
+    void updateForItems();
     void kill() override;
 
 public:
@@ -57,6 +59,7 @@ public:
     ~Player() override;
 
     void increaseXp(int level);
+    void increaseCoins(int nb);
 
     void update() override;
 };

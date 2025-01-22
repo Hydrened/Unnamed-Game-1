@@ -17,7 +17,12 @@ void Player::kill() {
 
 void Player::increaseXp(int level) {
     xp += level;
-    std::cout << xp << std::endl;
+    std::cout << "XP: " << xp << std::endl;
+}
+
+void Player::increaseCoins(int nb) {
+    coins += nb;
+    std::cout << "COINS: " << coins << std::endl;
 }
 
 // UPDATE
@@ -29,7 +34,7 @@ void Player::update() {
     updateFacing();
     updateAnimation(defaultPos);
     updateWeapon();
-    updateForXp();
+    updateForItems();
 }
 
 void Player::updateForControls() {
@@ -50,8 +55,8 @@ void Player::updateForControls() {
         dy /= magnitude;
     }
 
-    pos.x += dx * data.stats.speed;
-    pos.y += dy * data.stats.speed;
+    velocity = { dx * data.stats.speed, dy * data.stats.speed };
+    pos = pos + velocity;
 }
 
 void Player::updateForWorldCollisions() {
@@ -90,18 +95,18 @@ void Player::updateAnimation(LevelPos defaultPos) {
     sprite->setAnimation((defaultPos == pos) ? IDLE : WALK); 
 }
 
-void Player::updateForXp() {
+void Player::updateForItems() {
     static GameData* gameData = game->getData();
-    static std::unordered_map<std::string, LevelRect> itemHitobxes = gameData->physics->itemHitobxes;
+    static std::unordered_map<std::string, LevelRect> itemHitboxes = gameData->physics->itemHitboxes;
     static LevelRect defaultPlayerHitbox = gameData->others->entities[0].hitbox;
 
     LevelPos playerPosCenter = (defaultPlayerHitbox + pos).getCenter();
 
-    for (Xp* xp : map->getXps()) {
-        LevelRect defaultXpHitbox = itemHitobxes[xp->getTexture()];
-        LevelPos xpPosCenter = (defaultXpHitbox + xp->getPos()).getCenter();
-        LevelPos posDistance = playerPosCenter - xpPosCenter;
-        float distanceWithXp = std::abs(posDistance.x) + std::abs(posDistance.y);
-        if (distanceWithXp <= data.stats.pickup) xp->pickUp();
+    for (Item* item : map->getItems()) {
+        LevelRect defaultItemHitbox = itemHitboxes[item->getTexture()];
+        LevelPos itemPosCenter = (defaultItemHitbox + item->getPos()).getCenter();
+        LevelPos posDistance = playerPosCenter - itemPosCenter;
+        float distanceWithItem = std::abs(posDistance.x) + std::abs(posDistance.y);
+        if (distanceWithItem <= data.stats.pickup) item->pickUp();
     }
 }

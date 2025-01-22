@@ -15,6 +15,13 @@ LevelPos LevelPos::operator+(const LevelVelocity& other) const {
     return res;
 }
 
+LevelPos LevelPos::operator+=(const LevelVelocity& other) const {
+    LevelPos res = *this;
+    res.x += other.x;
+    res.y += other.y;
+    return res;
+}
+
 LevelPos LevelPos::operator-(const LevelPos& other) const {
     LevelPos res = *this;
     res.x -= other.x;

@@ -47,8 +47,8 @@ void Entity::renderTexture() {
     static Calculator* cal = game->getCalculator();
     static GameData* gameData = game->getData();
 
-    static LevelSize textureSize = gameData->sizes->textures[data.texture];
-    static LevelPos textureOffset = gameData->offsets->textures[data.texture];
+    LevelSize textureSize = gameData->sizes->textures[data.texture];
+    LevelPos textureOffset = gameData->offsets->textures[data.texture];
 
     H2DE_GraphicObject* entitySprite = H2DE_CreateGraphicObject();
     entitySprite->type = IMAGE;

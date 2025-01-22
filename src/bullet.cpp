@@ -1,13 +1,15 @@
 #include "bullet.h"
 
 // INIT
-Bullet::Bullet(Game* g, Weapon* w, BulletData d, float a) : game(g), weapon(w), data(d), angle(a) {
+Bullet::Bullet(Game* g, Weapon* w, BulletData d, float angle) : game(g), weapon(w), data(d) {
     static LevelRect playerHitbox = game->getData()->others->entities[0].hitbox;
     LevelPos playerPos = game->getMap()->getPlayer()->getPos();
 
     LevelPos playerCenter = (playerHitbox + playerPos).getCenter();
     LevelPos bulletCenter = data.size.makeRect({ 0.0f, 0.0f }).getCenter();
     pos = playerCenter - bulletCenter;
+
+    velocity = { data.speed * std::cos(angle), data.speed * std::sin(angle) };
 }
 
 // CLEANUP
@@ -30,9 +32,7 @@ void Bullet::updatePos() {
     static Camera* camera = game->getCamera();
     LevelPos camPos = camera->getPos();
 
-    LevelVelocity velocity = { data.speed * std::cos(angle), data.speed * std::sin(angle) };
     pos = pos + velocity;
-
     if (!camera->contains(pos.makeRect(data.size))) destroy();
 }
 
