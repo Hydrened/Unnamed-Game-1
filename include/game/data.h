@@ -131,12 +131,12 @@ struct GameData {
 
         std::unordered_map<int, WeaponData> weapons = {
             { 0, { "9mm", "weapon.png", 500, {
-                "player.png", { 0.15f, 0.15f },
+                "9mm-bullet.png", { 0.15f, 0.15f },
                     0.15f, 10.0f, false, false    /*< speed, damage, piercing, explosive */
                 }
             }},
             { 1, { "m4", "weapon.png", 200, {
-                "player.png", { 0.15f, 0.15f },
+                "9mm-bullet.png", { 0.15f, 0.15f },
                     0.2f, 5.0f, false, false    /*< speed, damage, piercing, explosive */
                 }
             }},

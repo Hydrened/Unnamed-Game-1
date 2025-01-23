@@ -53,7 +53,7 @@ public:
     std::unordered_map<LevelPos, Tile*, LevelPosHash> getPerimeter(LevelPos pos, bool withCenter);
     std::vector<Enemy*> getEnemies() const;
     std::vector<Item*> getItems() const;
-    bool hasToBeRemoved(Item* item);
+    bool hasToBeRemoved(Item* item) const;
 };
 
 #endif

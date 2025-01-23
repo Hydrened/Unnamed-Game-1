@@ -14,9 +14,11 @@
 #include "functions.h"
 #include "data.h"
 #include "camera.h"
+#include "save.h"
 #include "map.h"
 class Calculator;
 class Camera;
+class Save;
 class Map;
 
 class Game {
@@ -30,10 +32,11 @@ private:
 
     GameData* data = new GameData();
     GameState state = MAIN_MENU;
-    bool debugMode = true;
+    bool debugMode = false;
 
     Calculator* calculator = nullptr;
     Camera* camera = nullptr;
+    Save* save = nullptr;
     Map* map = nullptr;
 
     std::vector<SDL_Keycode> keysDown = {};
@@ -60,6 +63,7 @@ public:
     GameData* getData() const;
     GameState getState() const;
     Calculator* getCalculator() const;
+    Save* getSave() const;
     Camera* getCamera() const;
     Map* getMap() const;
     std::vector<SDL_Keycode> getKeysDown() const;

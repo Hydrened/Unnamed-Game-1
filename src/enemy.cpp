@@ -29,13 +29,7 @@ void Enemy::kill() {
 }
 
 // UPDATE
-void Enemy::update() {
-    updateSprite();
-    updateForPlayer();
-    updateWeapon();
-}
-
-void Enemy::updateForPlayer() {
+void Enemy::updateImpl() {
     if (!isNearPlayer()) {
         sprite->setAnimation(WALK);
         LevelPos playerPos = map->getPlayer()->getPos();

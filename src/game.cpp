@@ -13,7 +13,9 @@ Game::Game(int argc, char** argv) {
 
     H2DE_SetTextureScaleMode(engine, SDL_ScaleModeNearest);
 
+
     calculator = new Calculator(this);
+    save = new Save(this);
     camera = new Camera(this);
     map = new Map(this);
 }
@@ -57,6 +59,7 @@ void Game::createWindow() {
 // CLEANUP
 Game::~Game() {
     if (map) delete map;
+    delete save;
 
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
@@ -157,6 +160,10 @@ GameState Game::getState() const {
 
 Calculator* Game::getCalculator() const {
     return calculator;
+}
+
+Save* Game::getSave() const {
+    return save;
 }
 
 Camera* Game::getCamera() const {

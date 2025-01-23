@@ -19,9 +19,14 @@ void Map::initPlayer() {
 
 // CLEANUP
 Map::~Map() {
+    Save* save = game->getSave();
+
+    save->setCoins(save->getCoins() + player->getCoins());
     delete player;
+
     for (Enemy* enemy : enemies) delete enemy;
     enemies.clear();
+    
     for (const auto& [pos, tile] : tiles) delete tile;
     tiles.clear();
 }
@@ -309,6 +314,6 @@ std::vector<Item*> Map::getItems() const {
     return items;
 }
 
-bool Map::hasToBeRemoved(Item* item) {
+bool Map::hasToBeRemoved(Item* item) const {
     return (std::find(itemsToRemove.begin(), itemsToRemove.end(), item) != itemsToRemove.end());
 }

@@ -17,9 +17,13 @@ protected:
     EntityData data;
     Sprite* sprite;
 
-    Face facing = LEFT;
-    Weapon* weapon = nullptr;
+    H2DE_TimelineManager* tm = H2DE_CreateTimelineManager();
 
+    Weapon* weapon = nullptr;
+    Face facing = LEFT;
+    Uint8 redFilterOpacity = 0;
+
+    virtual void updateImpl() = 0;
     void updateSprite();
     void updateWeapon();
     void renderTexture();
@@ -30,7 +34,7 @@ public:
     Entity(Game* game, Map* map, LevelPos pos, EntityData data);
     virtual ~Entity();
 
-    virtual void update() = 0;
+    void update();
     void render();
 
     void equipWeapon(int id); 
@@ -61,7 +65,9 @@ public:
     void increaseXp(int level);
     void increaseCoins(int nb);
 
-    void update() override;
+    void updateImpl() override;
+
+    int getCoins() const;
 };
 
 
@@ -69,14 +75,13 @@ public:
 class Enemy : public Entity {
 private:
     bool isNearPlayer();
-    void updateForPlayer();
     void kill() override;
 
 public:
     Enemy(Game* game, Map* map, LevelPos pos, EntityData data);
     ~Enemy() override;
 
-    void update() override;
+    void updateImpl() override;
 };
 
 #endif

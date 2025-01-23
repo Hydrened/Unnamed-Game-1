@@ -8,5 +8,6 @@ bool getRandomBool();
 int getIndex(float yPos, int index);
 bool rand(float value);
 float rand(float min, float max);
+float lerp(float min, float max, float blend);
 
 #endif

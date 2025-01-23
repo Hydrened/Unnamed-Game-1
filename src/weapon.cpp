@@ -7,7 +7,9 @@ Weapon::Weapon(Game* g, Entity* u, WeaponData d) : game(g), user(u), data(d) {
 
 // CLEANUP
 Weapon::~Weapon() {
-    
+    for (Bullet* bullet : bullets) delete bullet;
+    bullets.clear();
+    bulletsToRemove.clear();
 }
 
 // EVENTS

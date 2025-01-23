@@ -1,3 +1,7 @@
+## 1.0.6
+#### ADDED
+- entity become red when hit
+
 ## 1.0.5
 #### ADDED
 - coin drop (+5)

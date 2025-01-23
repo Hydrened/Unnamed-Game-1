@@ -17,23 +17,19 @@ void Player::kill() {
 
 void Player::increaseXp(int level) {
     xp += level;
-    std::cout << "XP: " << xp << std::endl;
 }
 
 void Player::increaseCoins(int nb) {
     coins += nb;
-    std::cout << "COINS: " << coins << std::endl;
 }
 
 // UPDATE
-void Player::update() {
+void Player::updateImpl() {
     LevelPos defaultPos = pos;
-    updateSprite();
     updateForControls();
     updateForWorldCollisions();
     updateFacing();
     updateAnimation(defaultPos);
-    updateWeapon();
     updateForItems();
 }
 
@@ -109,4 +105,9 @@ void Player::updateForItems() {
         float distanceWithItem = std::abs(posDistance.x) + std::abs(posDistance.y);
         if (distanceWithItem <= data.stats.pickup) item->pickUp();
     }
+}
+
+// GETTER
+int Player::getCoins() const {
+    return coins;
 }

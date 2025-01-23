@@ -36,3 +36,7 @@ float rand(float min, float max) {
     std::uniform_real_distribution<float> dist(min, max);
     return dist(e);
 }
+
+float lerp(float min, float max, float blend) {
+    return min - blend * (max - min);
+}
