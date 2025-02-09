@@ -1,3 +1,10 @@
+## 2.0.0
+#### REMAKE FROM SCRATCH
+- using H2DE-2.0.14
+#### ADDED
+- map generation
+- player sprite
+
 ## 1.0.6
 #### ADDED
 - entity become red when hit

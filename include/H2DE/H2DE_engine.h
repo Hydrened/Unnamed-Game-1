@@ -1,344 +1,309 @@
 #ifndef H2DE_ENGINE_H
 #define H2DE_ENGINE_H
 
+#undef max
+#undef min
+
+#include <H2DE_json.h>
+#include <H2DE_utils.h>
+#include <H2DE_surface.h>
+#include <H2DE_asset_loader.h>
+#include <H2DE_window.h>
+#include <H2DE_renderer.h>
+#include <H2DE_settings.h>
+#include <H2DE_camera.h>
+#include <H2DE_object.h>
+#include <H2DE_button.h>
+#include <H2DE_timeline.h>
+#include <H2DE_game_data.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-#include <H2DE/H2DE_loader.h>
-#include <H2DE/H2DE_calculator.h>
-#include <H2DE/H2DE_types.h>
-#include <H2DE/H2DE_color.h>
-#include <H2DE/H2DE_graphic.h>
-#include <H2DE/H2DE_timeline.h>
-#include <H2DE/H2DE_json.h>
-#include <algorithm>
-#include <climits>
-#include <optional>
 #include <filesystem>
 #include <iostream>
-#include <string>
-#include <map>
-#include <unordered_map>
-#include <vector>
-
+#include <thread>
+#include <Windows.h>
+struct H2DE_GameData;
+class H2DE_Window;
+class H2DE_Renderer;
+class H2DE_Settings;
+class H2DE_Camera;
 class H2DE_Timeline;
-
-namespace fs = std::filesystem;
+class H2DE_LevelObject;
+class H2DE_Button;
 
 /**
- * The type used to identify an engine
+ * Type used to identify an engine
  * \since H2DE-1.0.0
  */
 class H2DE_Engine {
 private:
-    int fps;
-    H2DE_Size size;
-    H2DE_Size minSize = { -1, -1 };
-    H2DE_Size maxSize = { -1, -1 };
+    H2DE_Window* window = nullptr;
+    H2DE_Renderer* renderer = nullptr;
+    H2DE_Settings* settings = nullptr;
+    H2DE_Camera* camera = nullptr;
+
+    H2DE_GameData* gameData = new H2DE_GameData();
+    H2DE_EngineData data;
+    unsigned int fps;
     bool isRunning = true;
-    SDL_Renderer* renderer;
-    int dataToLoad, loadedData = 0;
+    int currentFPS = 0;
+    bool paused = false;
+    
+    int loadedData = 0;
+    int dataToLoad = 0;
 
     std::unordered_map<std::string, SDL_Texture*> textures;
     std::unordered_map<std::string, Mix_Chunk*> sounds;
 
-    std::vector<H2DE_GraphicObject*> graphicObjects;
-    std::optional<H2DE_SClick*> click = std::nullopt;
+    std::vector<H2DE_LevelObject*> objects;
+    std::vector<H2DE_Button*> buttons;
+    std::vector<H2DE_Timeline*> loops;
 
-    /**
-     * Type used to store debug states
-     * \since H2DE-1.3.4
-     */
-    struct H2DE_Debug {
-        bool graphicObjects = false;
-        bool scaleOrigins = false;
-        bool rotationOrigins = false;
-    };
+    std::function<void(SDL_Event)> handleEvents = NULL;
+    std::function<void()> update = NULL;
 
-    H2DE_Debug* debug = new H2DE_Debug();
-    SDL_ScaleMode renderingMode = SDL_ScaleModeLinear;
-
-
-    /**
-     * Counts the number of file to be loaded from a parent directory
-     * \param dir parent directory
-     * \return the number of files
-     * \since H2DE-1.0.0
-     */
-    static int countFiles(const fs::path& dir);
-    /**
-     * Imports the files
-     * \param dir parent directory
-     * \since H2DE-1.0.0
-     */
-    void importFiles(const fs::path& dir);
-    /**
-     * Imports a file
-     * \param file file
-     * \since H2DE-1.3.10
-     */
-    void importFile(const fs::path& file);
-    /**
-     * Imports a texture from a png file
-     * \param img png file
-     * \since H2DE-1.0.0
-     */
-    void importTexture(const fs::path& img);
-    /**
-     * Imports a sound from a mp3 or ogg file
-     * \param sound mp3 file
-     * \since H2DE-1.0.0
-     */
-    void importSound(const fs::path& sound);
-    /**
-     * Indicates that an asset has been loaded
-     * \since H2DE-1.0.0
-     */
+    static int countFilesToLoad(const std::filesystem::path& dir);
+    void importFiles(const std::filesystem::path& dir);
+    void importFile(const std::filesystem::path& file);
+    void importTexture(const std::filesystem::path& img);
+    void importSound(const std::filesystem::path& song);
     void assetImported();
-    
-    /**
-     * Duplicates `H2DE_GraphicObject` which have the `repeatX` property
-     * \return a graphic object vector of the duplicated graphic objects
-     * \since H2DE-1.0.0
-     */
-    std::vector<H2DE_GraphicObject*> getRepeatXGraphicObjects();
-    /**
-     * Duplicates `H2DE_GraphicObject` which have the `repeatY` property
-     * \return a graphic object vector of the duplicated graphic objects
-     * \since H2DE-1.0.0
-     */
-    std::vector<H2DE_GraphicObject*> getRepeatYGraphicObjects();
 
-    /**
-     * Renders a pixel on the renderer
-     * \param pos position of the pixel
-     * \param color color of the pixel
-     * \since H2DE-1.0.0
-     */
-    void renderPixel(H2DE_Pos pos, H2DE_RGB rgb);
-    /**
-     * Renders an image on the renderer
-     * \param g the image to render
-     * \since H2DE-1.0.0
-     */
-    void renderImage(H2DE_GraphicObject* g);
-    /**
-     * Renders a polygon on the renderer
-     * \param g the polygon to render
-     * \since H2DE-1.0.0
-     */
-    void renderPolygon(H2DE_GraphicObject* g);
-    /**
-     * Renders a circle on the renderer
-     * \param g the circle to render
-     * \since H2DE-1.0.0
-     */
-    void renderCircle(H2DE_GraphicObject* g);
+    void updateLevelObjects();
 
-    /**
-     * Simulates a click on a graphic element
-     * \param g a pointer to a graphic element
-     * \return a boolean
-     * \since H2DE-1.1.0
-     */
-    bool isElementClicked(H2DE_GraphicObject* g);
-
-    friend class H2DE_Calculator;
+    void click(int x, int y);
 
 public:
-    H2DE_Engine(SDL_Renderer* renderer, int w, int h, int fps);
+    H2DE_Engine(H2DE_EngineData data);
     ~H2DE_Engine();
 
     /**
-     * Renders all graphic objects added during this frame
-     * \param engine a pointer to an engine
+     * Runs the engine's game loop
+     * \param engine pointer to the engine
+     * \since H2DE-2.0.0
+     */
+    friend void H2DE_RunEngine(H2DE_Engine* engine);
+
+    /**
+     * Debugs the number of object rendered by the engine
+     * \param engine pointer to the engine
+     * \param state debug state
+     * \since H2DE-1.3.4
+     */
+    friend void H2DE_DebugObjectNumber(H2DE_Engine* engine, bool state);
+    /**
+     * Render each hitboxe of every level objects 
+     * \param engine pointer to the engine
+     * \param state debug state
+     * \since H2DE-2.0.14
+     */
+    friend void H2DE_DebugObjectHitboxes(H2DE_Engine* engine, bool state);
+
+    /**
+     * Delays a function call
+     * \param ms time duration in milliseconds
+     * \param callback function called after the delay
+     * \since H2DE-2.0.1
+     */
+    static void H2DE_Delay(unsigned int ms, std::function<void()> callback);
+
+    /**
+     * Loads all assets from a directory
+     * \param engine pointer to the engine
+     * \param dir directory containing the assets
      * \since H2DE-1.0.0
      */
-    friend void H2DE_RenderEngine(H2DE_Engine* engine);
+    friend void H2DE_LoadAssets(H2DE_Engine* engine, const std::filesystem::path& dir);
     /**
-     * Loads every assets from a parent directory
-     * \param engine a pointer to an engine
-     * \param dir parent directory
-     * \since H2DE-1.0.0
-     */
-    friend void H2DE_LoadAssets(H2DE_Engine* engine, const fs::path& dir);
-    /**
-     * Loads an asset
-     * \param engine a pointer to an engine
-     * \param file file
+     * Loads a specific asset
+     * \param engine pointer to the engine
+     * \param file asset to load
      * \since H2DE-1.3.10
      */
-    friend void H2DE_LoadAsset(H2DE_Engine* engine, const fs::path& file);
+    friend void H2DE_LoadAsset(H2DE_Engine* engine, const std::filesystem::path& file);
     /**
-     * Removes every assets from an engine
-     * \param engine a pointer to an engine
+     * Removes all assets
+     * \param engine pointer to the engine
      * \since H2DE-1.3.11
      */
     friend void H2DE_RemoveAssets(H2DE_Engine* engine);
     /**
-     * Removes an asset from an engine
-     * \param engine a pointer to an engine
-     * \param name asset's name
+     * Removes a specific asset
+     * \param engine pointer to the engine
+     * \param file asset to remove
      * \since H2DE-1.3.11
      */
-    friend void H2DE_RemoveAsset(H2DE_Engine* engine, const fs::path& name);
-    /**
-     * Adds a graphic object to be rendered this frame
-     * \param engine a pointer to an engine
-     * \param g a pointer the graphic object
-     * \since H2DE-1.0.0
-     */
-    friend void H2DE_AddGraphicObject(H2DE_Engine* engine, H2DE_GraphicObject* g);
+    friend void H2DE_RemoveAsset(H2DE_Engine* engine, const std::filesystem::path& file);
 
     /**
-     * Clicks on a specified point on an engine
-     * \param engine a pointer to an engine
-     * \param x x position of the click
-     * \param y y position of the click
-     * \since H2DE-1.1.0
+     * Creates a level object
+     * \param engine pointer to the engine
+     * \param data level object's data
+     * \returns a pointer to the new level object
+     * \since H2DE-2.0.4
      */
-    friend void H2DE_Click(H2DE_Engine* engine, int x, int y);
+    friend H2DE_LevelObject* H2DE_CreateLevelObject(H2DE_Engine* engine, H2DE_LevelObjectData data);
+    /**
+     * Destroys a level object
+     * \param engine pointer to the engine
+     * \param object pointer to the object
+     * \since H2DE-2.0.4
+     */
+    friend void H2DE_DestroyLevelObject(H2DE_Engine* engine, H2DE_LevelObject* object);
 
     /**
-     * Gets the size of the engine
-     * \param engine a pointer to the engine
-     * \return the size of the engine
-     * \since H2DE-1.0.4
+     * Creates a button
+     * \param engine pointer to the engine
+     * \param data button's data
+     * \returns a pointer to the new button
+     * \since H2DE-2.0.10
      */
-    friend H2DE_Size H2DE_GetEngineSize(H2DE_Engine* engine);
+    friend H2DE_Button* H2DE_CreateButton(H2DE_Engine* engine, H2DE_ButtonData data);
     /**
-     * Sets a new size for the engine
-     * \param engine a pointer to an engine
-     * \param size the new size
-     * \since H2DE-1.0.4
+     * Destroys a button
+     * \param engine pointer to the engine
+     * \param button pointer to the button
+     * \since H2DE-2.0.10
      */
-    friend void H2DE_SetEngineSize(H2DE_Engine* engine, int w, int h);
-    /**
-     * Sets the maximum size for the specified engine
-     * \param engine a pointer to an engine
-     * \param w maxmum width for the engine
-     * \param h maxmum height for the engine
-     * \since H2DE-1.0.5
-     */
-    friend void H2DE_SetEngineMaximumSize(H2DE_Engine* engine, int w, int h);
-    /**
-     * Gets the maximum size for the specified engine
-     * \param engine a pointer to an engine
-     * \return the maximum size of the engine
-     * \since H2DE-1.0.5
-     */
-    friend H2DE_Size H2DE_GetEngineMaximumSize(H2DE_Engine* engine);
-    /**
-     * Sets the minimum size for the specified engine
-     * \param engine a pointer to an engine
-     * \param w maxmum width for the engine
-     * \param h maxmum height for the engine
-     * \since H2DE-1.0.5
-     */
-    friend void H2DE_SetEngineMinimumSize(H2DE_Engine* engine, int w, int h);
-    /**
-     * Gets the minimum size for the specified engine
-     * \param engine a pointer to an engine
-     * \return the minimum size of the engine
-     * \since H2DE-1.0.5
-     */
-    friend H2DE_Size H2DE_GetEngineMinimumSize(H2DE_Engine* engine);
-    /**
-     * Gets the FPS on an engine
-     * \param engine a pointer to an engine
-     * \return fps
-     * \since H2DE-1.0.9
-     */
-    friend int H2DE_GetEngineFPS(H2DE_Engine* engine);
-    /**
-     * Creates a timeline
-     * \param engine a pointer to an engine
-     * \param duration time in ms
-     * \param effect timeline effect
-     * \param update function called every frame
-     * \param completed function called once the timeline is finished
-     * \param loop number of loops (-1 = infinite)
-     * \since H2DE-1.0.9
-     */
-    friend H2DE_Timeline* H2DE_CreateTimeline(H2DE_Engine* engine, unsigned int duration, H2DE_TimelineEffect effect, std::function<void(float)> update, std::function<void()> completed, int loop);
+    friend void H2DE_DestroyButton(H2DE_Engine* engine, H2DE_Button* button);
 
     /**
-     * Sets sounds volume
-     * \param engine a pointer to an engine
-     * \param volume the volume (0-100)
-     * \param channel the channel of the target (-1 for all)
-     * \since H2DE-1.0.0
+     * Pauses the game
+     * \param engine pointer to the engine
+     * \since H2DE-2.0.11
      */
-    friend void H2DE_SetSoundVolume(H2DE_Engine* engine, int channel, int volume);
+    friend void H2DE_Pause(H2DE_Engine* engine);
+    /**
+     * Resumes the game
+     * \param engine pointer to the engine
+     * \since H2DE-2.0.11
+     */
+    friend void H2DE_Resume(H2DE_Engine* engine);
+    /**
+     * Gets the pause state of an engine
+     * \param engine pointer to the engine
+     * \returns true if game is paused
+     * \since H2DE-2.0.11
+     */
+    friend bool H2DE_IsPaused(H2DE_Engine* engine);
+
     /**
      * Plays a sound
-     * \param engine a pointer to an engine
-     * \param channel the channel of the target (-1 for all)
-     * \param sound the name of the loaded sound
-     * \param loop number of loop (-1 = infinite)
+     * \param engine pointer to the engine
+     * \param channel target's channel (-1 for all)
+     * \param sound name of the sound file
+     * \param loop number of loops (-1 = infinite)
+     * \returns the channel of the playing sound
      * \since H2DE-1.0.0
      */
-    friend void H2DE_PlaySound(H2DE_Engine* engine, int channel, std::string sound, int loop);
+    friend int H2DE_PlaySound(H2DE_Engine* engine, int channel, std::string sound, int loop);
     /**
      * Pauses a sound
-     * \param engine a pointer to an engine
-     * \param channel the channel of the target (-1 for all)
+     * \param engine pointer to the engine
+     * \param channel target's channel (-1 for all)
      * \since H2DE-1.0.0
      */
     friend void H2DE_PauseSound(H2DE_Engine* engine, int channel);
     /**
      * Resumes a sound
-     * \param engine a pointer to an engine
-     * \param channel the channel of the target (-1 for all)
+     * \param engine pointer to the engine
+     * \param channel target's channel (-1 for all)
      * \since H2DE-1.0.0
      */
     friend void H2DE_ResumeSound(H2DE_Engine* engine, int channel);
 
     /**
-     * Tells the number of graphic objects that are rendered
-     * \param engine a pointer to an engine
-     * \param active state of the debug
-     * \since H2DE-1.3.4
+     * Gets the engine's window
+     * \param engine pointer to the engine
+     * \returns a pointer to the engine's window
+     * \since H2DE-2.0.0
      */
-    friend void H2DE_DebugGraphicObjects(H2DE_Engine* engine, bool active);
+    friend H2DE_Window* H2DE_GetWindow(H2DE_Engine* engine);
     /**
-     * Debugs scale origins
-     * \param engine a pointer to an engine
-     * \param active state of the debug
-     * \since H2DE-1.3.4
+     * Gets the FPS limit set for an engine
+     * \param engine pointer to the engine
+     * \returns the fps limit
+     * \since H2DE-1.0.9
      */
-    friend void H2DE_DebugScaleOrigins(H2DE_Engine* engine, bool active);
+    friend int H2DE_GetFps(H2DE_Engine* engine);
     /**
-     * Debugs rotation origins
-     * \param engine a pointer to an engine
-     * \param active state of the debug
-     * \since H2DE-1.3.4
+     * Gets the number of frames for a time in ms
+     * \param engine pointer to the engine
+     * \param ms time in ms
+     * \returns the number of frame
+     * \since H2DE-2.0.9
      */
-    friend void H2DE_DebugRotationOrigins(H2DE_Engine* engine, bool active);
+    friend int H2DE_GetSteps(H2DE_Engine* engine, unsigned int ms);
+    /**
+     * Gets the current FPS the engine is running at
+     * \param engine pointer to the engine
+     * \returns the current fps
+     * \since H2DE-2.0.1
+     */
+    friend int H2DE_GetCurrentFps(H2DE_Engine* engine);
+    /**
+     * Gets the game's data
+     * \param engine pointer to the engine
+     * \returns the game's data
+     * \since H2DE-2.0.5
+     */
+    friend H2DE_GameData* H2DE_GetGameData(H2DE_Engine* engine);
+    /**
+     * Gets the engine's settings
+     * \param engine pointer to the engine
+     * \returns the engine's settings
+     * \since H2DE-2.0.8
+     */
+    friend H2DE_Settings* H2DE_GetSettings(H2DE_Engine* engine);
+    /**
+     * Gets the engine's camera
+     * \param engine pointer to the engine
+     * \returns the engine's camera
+     * \since H2DE-2.0.2
+     */
+    friend H2DE_Camera* H2DE_GetCamera(H2DE_Engine* engine);
 
     /**
-     * Set the texture scale mode for image rendering
-     * \param engine a pointer to an engine
-     * \param mode rendering mode
-     * \since H2DE-1.3.15
+     * Sets the FPS limit of an engine
+     * \param engine pointer to the engine
+     * \param fps new FPS limit
+     * \since H2DE-2.0.0
      */
-    friend void H2DE_SetTextureScaleMode(H2DE_Engine* engine, SDL_ScaleMode mode);
+    friend void H2DE_SetFps(H2DE_Engine* engine, unsigned int fps);
+    /**
+     * Set the function call each frame in the game loop for events
+     * \param engine pointer to the engine
+     * \param call function called for events
+     * \since H2DE-2.0.0
+     */
+    friend void H2DE_SetGameHandleEventCall(H2DE_Engine* engine, std::function<void(SDL_Event)> call);
+    /**
+     * Set the function call each frame in the game loop for updates
+     * \param engine pointer to the engine
+     * \param call function called for
+     * \since H2DE-2.0.0
+     */
+    friend void H2DE_SetGameUpdateCall(H2DE_Engine* engine, std::function<void()> call);
 };
 
 /**
  * Creates an engine
- * \param renderer a pointer to the renderer
- * \param w the width of the engine
- * \param h this heigth of the engine
- * \param fps the fps the window is running at
- * \return a pointer to an engine
+ * \param data engine's data
+ * \returns a pointer to new new engine
  * \since H2DE-1.0.0
  */
-extern H2DE_Engine* H2DE_CreateEngine(SDL_Renderer* renderer, int w, int h, int fps);
+extern H2DE_Engine* H2DE_CreateEngine(H2DE_EngineData data);
 /**
  * Destroys an engine
- * \param engine the engine to destroy
+ * \param engine pointer to the engine
  * \since H2DE-1.0.0
  */
 extern void H2DE_DestroyEngine(H2DE_Engine* engine);
+/**
+ * Sets volume's sound
+ * \param channel target's channel (-1 for all)
+ * \param volume sound's volume (0-100)
+ * \since H2DE-1.0.0
+ */
+extern void H2DE_SetVolumeSound(int channel, int volume);
 
 #endif

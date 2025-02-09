@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv) {
     try {
-        Game* game = new Game(argc, argv);
+        Game* game = new Game();
         game->run();
         delete game;
     } catch (const std::exception& e) {
