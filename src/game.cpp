@@ -3,8 +3,9 @@
 // INIT
 Game::Game() {
     initEngine();
-    map = new Map(this);
-    
+    initMap();
+    initCamera();
+
     H2DE_DebugObjectNumber(engine, false);
     H2DE_DebugObjectHitboxes(engine, true);
 }
@@ -32,6 +33,29 @@ void Game::initEngine() {
     });
 }
 
+void Game::initMap() {
+    map = new Map(this);
+}
+
+void Game::initCamera() {
+    static H2DE_Camera* camera = H2DE_GetCamera(engine);
+    static Player* player = map->getPlayer();
+    static H2DE_LevelObject* playerObject = player->getObject();
+    static H2DE_LevelObjectData* playerObjectData = player->getObjectData();
+
+    H2DE_LevelSize playerTextureSize = { 1.0f, 1.0f };
+
+    H2DE_LevelPos camPos = H2DE_GetCameraPos(camera);
+    H2DE_LevelPos playerPos = playerObjectData->pos;
+
+    H2DE_LevelSize camSize = H2DE_GetCameraSize(camera);
+    H2DE_LevelPos camOffset = { (camSize.w - playerTextureSize.w) / 2, (camSize.h - playerTextureSize.h) / 2 };
+
+    H2DE_SetCameraPos(camera, camPos + playerPos - camOffset);
+    H2DE_SetCameraReference(camera, playerObject);
+    H2DE_SetCameraLockedToReference(camera, true);
+}
+
 // CLEANUP
 Game::~Game() {
     delete map;
@@ -48,8 +72,30 @@ void Game::run() {
 
 // EVENTS
 void Game::handleEvents(SDL_Event event) {
-    while (SDL_PollEvent(&event)) switch (event.type) {
-        
+    switch (event.type) {
+        case SDL_KEYDOWN: {
+            SDL_Keycode key = event.key.keysym.sym;
+            if (std::find(keysDown.begin(), keysDown.end(), key) == keysDown.end()) keysDown.push_back(key);
+            break;
+        }
+
+        case SDL_KEYUP:
+            keysDown.erase(std::find(keysDown.begin(), keysDown.end(), event.key.keysym.sym));
+            break;
+
+        case SDL_MOUSEMOTION: mousePos = { event.button.x, event.button.y }; break;
+
+        case SDL_MOUSEBUTTONDOWN: {
+            int button = event.button.button;
+            if (std::find(mouseButtonsDown.begin(), mouseButtonsDown.end(), button) == mouseButtonsDown.end()) mouseButtonsDown.push_back(button);
+            break;
+        }
+
+        case SDL_MOUSEBUTTONUP:
+            mouseButtonsDown.erase(std::find(mouseButtonsDown.begin(), mouseButtonsDown.end(), event.button.button));
+            break;
+
+        default: break;
     }
 }
 
@@ -65,4 +111,16 @@ H2DE_Engine* Game::getEngine() const {
 
 GameData* Game::getData() const {
     return data;
+}
+
+std::vector<SDL_Keycode> Game::getKeysDown() const {
+    return keysDown;
+}
+
+std::vector<int> Game::getMouseButtonsDown() const {
+    return mouseButtonsDown;
+}
+
+H2DE_AbsPos Game::getMousePos() const {
+    return mousePos;
 }

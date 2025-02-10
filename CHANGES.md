@@ -1,3 +1,18 @@
+## 2.0.1
+#### ADDED
+- entities sprite animation
+- player movements
+- player speed
+- player facing mouse
+- enemies
+- enemies walking towards player
+- enemies stop when near player
+- enemies facing player
+- player collision with obstacles
+- enemies attack
+#### LIB
+- updated from H2DE-2.0.14 to H2DE-2.0.18
+
 ## 2.0.0
 #### REMAKE FROM SCRATCH
 - using H2DE-2.0.14

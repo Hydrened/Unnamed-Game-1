@@ -4,10 +4,17 @@
 Map::Map(Game* g) : game(g) {
     initPlayer();
     generate();
+
+    static H2DE_Engine* engine = game->getEngine();
+    t = H2DE_CreateTimeline(engine, 1000, LINEAR, NULL, [this]() {
+        summonEnemy(1, 1.0f);
+    }, -1);
 }
 
 void Map::initPlayer() {
-    EntityData playerData = EntityData();
+    static std::unordered_map<int, EntityData> entitiesData = game->getData()->entitiesData;
+
+    EntityData playerData = entitiesData[0];
     player = new Player(game, this, { 0.0f, 0.0f }, playerData);
 }
 
@@ -55,7 +62,8 @@ H2DE_LevelObjectData Map::getGroundObjectData(H2DE_LevelPos pos, TileData tileDa
     H2DE_LevelObjectData data = H2DE_LevelObjectData();
     data.pos = pos + textureData.offset;
     data.texture = H2DE_CreateTexture(engine, getGroundTileTextureData(tileData, textureData));
-    data.index = 0;
+    data.index = Map::getIndex(data.pos.y, 0);
+
     return data;
 }
 
@@ -65,12 +73,27 @@ H2DE_LevelObjectData Map::getDecorationObjectData(H2DE_LevelPos pos, TileData ti
     H2DE_LevelObjectData data = H2DE_LevelObjectData();
     data.pos = pos + textureData.offset;
     data.texture = H2DE_CreateTexture(engine, getDecorationTileTextureData(tileData, textureData));
-    data.index = 1;
+    data.index = Map::getIndex(data.pos.y, 3);
+
+    H2DE_Hitbox collisionHitbox = H2DE_Hitbox();
+    collisionHitbox.rect = { 0.5f, 0.0f, 1.0f, 1.0f };
+    collisionHitbox.color = { 127, 127, 255, 255 };
+    collisionHitbox.collisionIndex = 0;
+    data.hitboxes.push_back(collisionHitbox);
+
     return data;
 }
 
 // CLEANUP
 Map::~Map() {
+    delete t;
+    destroyTiles();
+    destroyEnemies();
+    destroyPlayer();
+    std::cout << "Map cleared" << std::endl;
+}
+
+void Map::destroyTiles() {
     static H2DE_Engine* engine = game->getEngine();
 
     for (const auto& [pos, tile] : tiles) {
@@ -78,13 +101,65 @@ Map::~Map() {
         if (tile->decorationObject.has_value()) H2DE_DestroyLevelObject(engine, tile->decorationObject.value());
 
         delete tile;
-        std::cout << "Tile cleared" << std::endl;
     }
+    std::cout << "Tiles cleared" << std::endl;
+}
+
+void Map::destroyEnemies() {
+    for (Enemy* enemy : enemies) delete enemy;
+}
+
+void Map::destroyPlayer() {
     delete player;
-    std::cout << "Map cleared" << std::endl;
+}
+
+// EVENTS
+void Map::summonEnemy(int id, float size) {
+    static H2DE_Engine* engine = game->getEngine();
+    static H2DE_Camera* camera = H2DE_GetCamera(engine);
+    static GameData* gameData = game->getData();
+    H2DE_LevelSize camSize = H2DE_GetCameraSize(camera);
+
+    float rX = H2DE_RandomFloatInRange(0.0f, 1.0f);
+    float rY = H2DE_RandomFloatInRange(0.0f, 1.0f);
+
+    if (H2DE_RandomBool()) rY = std::round(rY);
+    else rX = std::round(rX);
+
+    if (rX == 0.0f) rX -= 0.1f;
+    else if (rX == 1.0f) rX += 0.1f;
+
+    if (rY == 0.0f) rY -= 0.1f;
+    else if (rY == 1.0f) rY += 0.1f;
+
+    H2DE_LevelPos pos = { rX * camSize.w, rY * camSize.h };
+    summonEnemy(id, pos + H2DE_GetCameraPos(camera), size);
+}
+
+void Map::summonEnemy(int id, H2DE_LevelPos pos, float size) {
+    static std::unordered_map<int, EntityData> entitiesData = game->getData()->entitiesData;
+    enemies.push_back(new Enemy(game, this, pos, entitiesData[id]));
 }
 
 // UPDATE
 void Map::update() {
+    H2DE_TickTimeline(t);
     player->update();
+    for (Enemy* enemy : enemies) enemy->update();
+}
+
+// GETTER
+int Map::getIndex(float yPos, int index) {
+    return std::ceil(yPos) * 10 + index;
+}
+
+Player* Map::getPlayer() const {
+    return player;
+}
+
+Enemy* Map::getEnemy(H2DE_LevelObject* object) const {
+    auto it = std::find_if(enemies.begin(), enemies.end(), [object](Enemy* enemy) {
+        return object == enemy->getObject();
+    });
+    return (it != enemies.end()) ? *it : nullptr;
 }

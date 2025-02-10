@@ -9,6 +9,7 @@
 #include <iostream>
 #include <optional>
 #include <string>
+#include <random>
 #include <vector>
 struct H2DE_AbsSize;
 struct H2DE_AbsRect;
@@ -501,7 +502,7 @@ struct H2DE_Hitbox {
     H2DE_ColorRGB color = { 255, 0, 0, 255 };                                           // RGB color of the hitbox
     int collisionIndex = 0;                                                             // Collision index of the hitbox (it can only collides with same collision index)
     bool snap = false;                                                                  // Snap when colliding to another hitbox
-    std::optional<std::function<void()>> onCollide = std::nullopt;                      // Function called when colliding to another hitbox
+    std::optional<std::function<void(H2DE_LevelObject*)>> onCollide = std::nullopt;     // Function called when colliding to another hitbox
 };
 
 /**
@@ -558,5 +559,17 @@ std::ostream& operator<<(std::ostream& os, const H2DE_ColorHSV& hsv);
  * \since HH2DE-2.0.6
  */
 float H2DE_Lerp(float min, float max, float blend);
+/**
+ * \since HH2DE-2.0.17
+ */
+float H2DE_RandomFloatInRange(float min, float max);
+/**
+ * \since HH2DE-2.0.17
+ */
+int H2DE_RandomIntInRange(int min, int max);
+/**
+ * \since HH2DE-2.0.17
+ */
+bool H2DE_RandomBool();
 
 #endif

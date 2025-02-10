@@ -30,6 +30,7 @@ data:
 	$(MAKE)
 
 run:
+	chcp 65001
 	cd $(BIN_DIR) && $(APP_NAME)
 
 clean:

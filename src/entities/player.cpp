@@ -2,24 +2,15 @@
 
 // INIT
 Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
-    H2DE_Engine* engine = game->getEngine();
+    getObjectData()->hitboxes.at(1).onCollide = [this](H2DE_LevelObject* object) {
+        Enemy* enemy = map->getEnemy(object);
+        EntityData enemyData = enemy->getData();
 
-    H2DE_LevelObjectData objectData = H2DE_LevelObjectData();
-    objectData.pos = { 1.0f, 1.0f };
-
-    H2DE_TextureData objectTextureData = H2DE_TextureData();
-    objectTextureData.name = "player.png";
-    objectTextureData.size = { 1.0f, 1.0f };
-    objectTextureData.scaleMode = H2DE_SCALE_MODE_NEAREST;
-
-    H2DE_SpriteData objectSpriteData = H2DE_SpriteData();
-    objectSpriteData.defaultAnimationName = "idle";
-    objectSpriteData.delay = 200;
-    objectSpriteData.nbFrame = 4;
-
-    objectData.texture = H2DE_CreateSprite(engine, objectTextureData, objectSpriteData);
-
-    object = H2DE_CreateLevelObject(engine, objectData);
+        if (enemy->canAttack()) {
+            enemy->attacked();
+            inflictDamages(enemyData.stats.attack, enemyData.stats.crit);
+        }
+    };
 }
 
 // CLEANUP
@@ -34,5 +25,35 @@ void Player::kill() {
 
 // UPDATE
 void Player::updateImpl() {
-    // std::cout << 1 << std::endl;
+    updateForControls();
+}
+
+void Player::updateForControls() {
+    float dx = 0.0f;
+    float dy = 0.0f;
+
+    for (const SDL_Keycode key : game->getKeysDown()) switch (key) {
+        case SDLK_UP: dy -= 1.0f; break;
+        case SDLK_DOWN: dy += 1.0f; break;
+        case SDLK_LEFT: dx -= 1.0f; break;
+        case SDLK_RIGHT: dx += 1.0f; break;
+        default: break;
+    }
+
+    float magnitude = std::sqrt(dx * dx + dy * dy);
+    if (magnitude > 0.0f) {
+        dx /= magnitude;
+        dy /= magnitude;
+    }
+
+    velocity = { dx * data.stats.speed, dy * data.stats.speed };
+}
+
+void Player::updateFacingImpl() {
+    static H2DE_Engine* engine = game->getEngine();
+    H2DE_LevelPos mousePos = H2DE_ConvertToLevelPos(engine, game->getMousePos());
+    H2DE_LevelObjectData* objData = H2DE_GetObjectData(object);
+
+    if (mousePos.x <= objData->pos.x + objData->texture->getData().size.w / 2) facing = H2DE_LEFT_FACE;
+    else facing = H2DE_RIGHT_FACE;
 }

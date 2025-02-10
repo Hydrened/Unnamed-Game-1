@@ -26,7 +26,10 @@ struct TextureData {
 };
 
 struct EntityData {
+    std::string textureName;
     EntityStats stats;
+    std::optional<H2DE_LevelRect> collisionHitbox;
+    H2DE_LevelRect damageHitbox;
 };
 
 struct TileGround {
