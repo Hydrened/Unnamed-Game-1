@@ -52,4 +52,20 @@ struct Tile {
     std::optional<H2DE_LevelObject*> decorationObject;
 };
 
+struct BulletData {
+    std::string textureName;
+    H2DE_LevelRect rect;
+    float speed;
+    float damage;
+    bool piercing;
+    bool explosive;
+};
+
+struct WeaponData {
+    std::string name;
+    std::string textureName;
+    int delay;
+    BulletData bullet;
+};
+
 #endif

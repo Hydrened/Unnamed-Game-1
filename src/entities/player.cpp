@@ -4,6 +4,8 @@
 Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
     getObjectData()->hitboxes.at(1).onCollide = [this](H2DE_LevelObject* object) {
         Enemy* enemy = map->getEnemy(object);
+        if (!enemy) return;
+        
         EntityData enemyData = enemy->getData();
 
         if (enemy->canAttack()) {
@@ -11,6 +13,8 @@ Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p,
             inflictDamages(enemyData.stats.attack, enemyData.stats.crit);
         }
     };
+
+    equipWeapon(0);
 }
 
 // CLEANUP
@@ -54,6 +58,6 @@ void Player::updateFacingImpl() {
     H2DE_LevelPos mousePos = H2DE_ConvertToLevelPos(engine, game->getMousePos());
     H2DE_LevelObjectData* objData = H2DE_GetObjectData(object);
 
-    if (mousePos.x <= objData->pos.x + objData->texture->getData().size.w / 2) facing = H2DE_LEFT_FACE;
+    if (mousePos.x <= objData->pos.x + objData->texture->getData()->size.w / 2) facing = H2DE_LEFT_FACE;
     else facing = H2DE_RIGHT_FACE;
 }

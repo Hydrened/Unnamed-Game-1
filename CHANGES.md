@@ -1,3 +1,12 @@
+## 2.0.2
+#### ADDED
+- red filter on entites when taking damages
+- weapon
+- bullets
+- weapon shooting bullets
+#### LIB
+- updated from H2DE-2.0.18 to H2DE-2.0.19
+
 ## 2.0.1
 #### ADDED
 - entities sprite animation

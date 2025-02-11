@@ -52,21 +52,37 @@ std::vector<H2DE_Hitbox> Entity::getHitboxes() const {
 // CLEANUP
 Entity::~Entity() {
     static H2DE_Engine* engine = game->getEngine();
+    if (weapon) delete weapon;
+    if (redFilterTimline) delete redFilterTimline;
     H2DE_DestroyLevelObject(engine, object);
     std::cout << "└─> Entity cleared" << std::endl;
 }
 
 // EVENTS
 void Entity::inflictDamages(float damages, float crit) {
+    static H2DE_Engine* engine = game->getEngine();
     static float critDamageMultiplier = game->getData()->critDamageMultiplier;
 
     if (H2DE_RandomFloatInRange(0.0f, 100.0f) < crit) damages *= critDamageMultiplier;
     damages = std::max(damages - data.stats.defence, 0.0f);
     data.stats.health = std::max(data.stats.health - damages, 0.0f);
 
-    std::cout << data.stats.health << std::endl;
-
     if (data.stats.health == 0) kill();
+
+    redFilterTimline = H2DE_CreateTimeline(engine, 100, LINEAR, [this](float blend) {
+        Uint8 otherThanRed = H2DE_Lerp(0, UINT8_MAX, blend);
+        H2DE_GetObjectData(object)->texture->getData()->color = { 255, otherThanRed, otherThanRed, 255 };
+    }, [this]() {
+        H2DE_GetObjectData(object)->texture->getData()->color = { 255, 255, 255, 255 };
+        delete redFilterTimline;
+        redFilterTimline = nullptr;
+    }, 0);
+}
+
+void Entity::equipWeapon(int id) {
+    static std::unordered_map<int, WeaponData> weaponsData = game->getData()->weaponsData;
+    if (weapon) delete weapon;
+    weapon = new Weapon(game, this, weaponsData[id]);
 }
 
 // UPDATE
@@ -77,7 +93,9 @@ void Entity::update() {
     updateFacingImpl();
     updateFacing();
     updateAnimation(defaultPos);
+    updateRedFilter();
     updateIndex();
+    updateWeapon();
 }
 
 void Entity::updatePos() {
@@ -96,9 +114,17 @@ void Entity::updateAnimation(H2DE_LevelPos defaultPos) {
     H2DE_SetSpriteAnimation(dynamic_cast<H2DE_Sprite*>(objData->texture), (defaultPos == objData->pos) ? "idle" : "walk");
 }
 
+void Entity::updateRedFilter() {
+    if (redFilterTimline) H2DE_TickTimeline(redFilterTimline);
+}
+
 void Entity::updateIndex() {
     H2DE_LevelObjectData* objData = getObjectData();
     objData->index = Map::getIndex(objData->pos.y, 2);
+}
+
+void Entity::updateWeapon() {
+    if (weapon) weapon->update();
 }
 
 // GETTER

@@ -32,6 +32,7 @@ public:
 
     H2DE_Engine* getEngine() const;
     GameData* getData() const;
+    Map* getMap() const;
     std::vector<SDL_Keycode> getKeysDown() const;
     std::vector<int> getMouseButtonsDown() const;
     H2DE_AbsPos getMousePos() const;

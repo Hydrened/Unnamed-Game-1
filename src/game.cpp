@@ -113,6 +113,10 @@ GameData* Game::getData() const {
     return data;
 }
 
+Map* Game::getMap() const {
+    return map;
+}
+
 std::vector<SDL_Keycode> Game::getKeysDown() const {
     return keysDown;
 }

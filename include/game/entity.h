@@ -2,8 +2,10 @@
 #define ENTITY_H
 
 #include "game.h"
+#include "weapon.h"
 class Game;
 class Map;
+class Weapon;
 
 class Entity {
 protected:
@@ -13,24 +15,25 @@ protected:
     EntityData data;
 
     H2DE_LevelObject* object = nullptr;
-
-//     Weapon* weapon = nullptr;
+    Weapon* weapon = nullptr;
 //     std::vector<AutoWeapon*> autoWeapons;
-    H2DE_Face facing = H2DE_LEFT_FACE;
-//     Uint8 redFilterOpacity = 0;
 
-    H2DE_Surface* getSprite() const;
-    std::vector<H2DE_Hitbox> getHitboxes() const;
+    H2DE_Face facing = H2DE_LEFT_FACE;
+    H2DE_Timeline* redFilterTimline = nullptr;
+
+    virtual void kill() = 0;
 
     virtual void updateImpl() = 0;
     void updatePos();
     virtual void updateFacingImpl() = 0;
     void updateFacing();
     void updateAnimation(H2DE_LevelPos defaultPos);
+    void updateRedFilter();
     void updateIndex();
-//     void updateWeapon();
+    void updateWeapon();
 
-    virtual void kill() = 0;
+    H2DE_Surface* getSprite() const;
+    std::vector<H2DE_Hitbox> getHitboxes() const;
 
 public:
     Entity(Game* game, Map* map, H2DE_LevelPos pos, EntityData data);
@@ -39,12 +42,11 @@ public:
     void update();
 
     void inflictDamages(float damages, float crit);
-    //     void equipWeapon(int id); 
+    void equipWeapon(int id); 
 
     EntityData getData() const;
     H2DE_LevelObject* getObject() const;
     H2DE_LevelObjectData* getObjectData() const;
-
 };
 
 
