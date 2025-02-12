@@ -59,6 +59,10 @@ Entity::~Entity() {
 }
 
 // EVENTS
+void Entity::kill() {
+    dead = true;
+}
+
 void Entity::inflictDamages(float damages, float crit) {
     static H2DE_Engine* engine = game->getEngine();
     static float critDamageMultiplier = game->getData()->critDamageMultiplier;
@@ -138,4 +142,12 @@ H2DE_LevelObject* Entity::getObject() const {
 
 H2DE_LevelObjectData* Entity::getObjectData() const {
     return H2DE_GetObjectData(getObject());
+}
+
+Weapon* Entity::getWeapon() const {
+    return weapon;
+}
+
+bool Entity::isDead() const {
+    return dead;
 }

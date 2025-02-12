@@ -1,5 +1,13 @@
+## 2.0.3
+#### ADDED
+- player taking damage from enemies's bullets
+- enemies taking damage from player's bullets
+- enemies death
+- bullet piercing
+
 ## 2.0.2
 #### ADDED
+- player taking damges from enemies
 - red filter on entites when taking damages
 - weapon
 - bullets

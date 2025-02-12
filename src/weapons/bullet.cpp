@@ -52,3 +52,26 @@ void Bullet::update() {
     H2DE_LevelObjectData* objData = H2DE_GetObjectData(object);
     objData->pos = objData->pos + velocity;
 }
+
+// GETTER
+H2DE_LevelObject* Bullet::getObject() const {
+    return object;
+}
+
+Weapon* Bullet::getWeapon() const {
+    return weapon;
+}
+
+BulletData Bullet::getData() const {
+    return data;
+}
+
+bool Bullet::getHit() const {
+    return hit;
+}
+
+// SETTER
+void Bullet::setHit() {
+    if (data.piercing) return;
+    hit = true;
+}

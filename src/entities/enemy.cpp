@@ -2,7 +2,19 @@
 
 // INIT
 Enemy::Enemy(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
+    getObjectData()->hitboxes.at(0).onCollide = [this](H2DE_LevelObject* object) {
+        Bullet* bullet = map->getBullet(object);
 
+        if (bullet) {
+            Player* player = dynamic_cast<Player*>(bullet->getWeapon()->getOwner());
+
+            if (player) {
+                EntityData playerData = player->getData();
+                inflictDamages(bullet->getData().damage, playerData.stats.crit);
+                bullet->setHit();
+            }
+        }
+    };
 }
 
 // CLEANUP
@@ -11,10 +23,6 @@ Enemy::~Enemy() {
 }
 
 // EVENTS
-void Enemy::kill() {
-    
-}
-
 bool Enemy::isNearPlayer() {
     static float nearPlayer = game->getData()->nearPlayer;
     H2DE_LevelPos pos = getObjectData()->pos;

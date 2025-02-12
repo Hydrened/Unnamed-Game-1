@@ -14,6 +14,7 @@ protected:
     H2DE_LevelVelocity velocity = { 0.0f, 0.0f };
     EntityData data;
 
+    bool dead = false;
     H2DE_LevelObject* object = nullptr;
     Weapon* weapon = nullptr;
 //     std::vector<AutoWeapon*> autoWeapons;
@@ -21,7 +22,7 @@ protected:
     H2DE_Face facing = H2DE_LEFT_FACE;
     H2DE_Timeline* redFilterTimline = nullptr;
 
-    virtual void kill() = 0;
+    void kill();
 
     virtual void updateImpl() = 0;
     void updatePos();
@@ -47,6 +48,8 @@ public:
     EntityData getData() const;
     H2DE_LevelObject* getObject() const;
     H2DE_LevelObjectData* getObjectData() const;
+    Weapon* getWeapon() const;
+    bool isDead() const;
 };
 
 
@@ -61,8 +64,6 @@ private:
     void updateFacingImpl() override;
 //     void updateForItems();
 //     void updateAutoWeapons();
-
-    void kill() override;
 
 public:
     Player(Game* game, Map* map, H2DE_LevelPos pos, EntityData data);
@@ -84,7 +85,6 @@ private:
     void updateImpl() override;
     void updateFacingImpl() override;
 
-    void kill() override;
     bool isNearPlayer();
 
 public:

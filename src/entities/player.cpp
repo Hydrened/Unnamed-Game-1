@@ -4,13 +4,23 @@
 Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
     getObjectData()->hitboxes.at(1).onCollide = [this](H2DE_LevelObject* object) {
         Enemy* enemy = map->getEnemy(object);
-        if (!enemy) return;
-        
-        EntityData enemyData = enemy->getData();
+        Bullet* bullet = map->getBullet(object);
 
-        if (enemy->canAttack()) {
-            enemy->attacked();
-            inflictDamages(enemyData.stats.attack, enemyData.stats.crit);
+        if (enemy) {
+            EntityData enemyData = enemy->getData();
+
+            if (enemy->canAttack()) {
+                enemy->attacked();
+                inflictDamages(enemyData.stats.attack, enemyData.stats.crit);
+            }
+            
+        } else if (bullet) {
+            Enemy* enemy = dynamic_cast<Enemy*>(bullet->getWeapon()->getOwner());
+
+            if (enemy) {
+                EntityData enemyData = enemy->getData();
+                inflictDamages(bullet->getData().damage, enemyData.stats.crit);
+            }
         }
     };
 
@@ -20,11 +30,6 @@ Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p,
 // CLEANUP
 Player::~Player() {
     std::cout << "Player cleared" << std::endl;
-}
-
-// EVENTS
-void Player::kill() {
-    
 }
 
 // UPDATE

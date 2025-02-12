@@ -144,7 +144,23 @@ void Map::summonEnemy(int id, H2DE_LevelPos pos, float size) {
 // UPDATE
 void Map::update() {
     H2DE_TickTimeline(t);
+    updatePlayer();
+    updateEnemies();
+}
+
+void Map::updatePlayer() {
     player->update();
+}
+
+void Map::updateEnemies() {
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](Enemy* enemy) {
+        bool isDead = enemy->isDead();
+        if (isDead) {
+            delete enemy;
+            return true;
+        } else return false;
+    }), enemies.end());
+
     for (Enemy* enemy : enemies) enemy->update();
 }
 
@@ -157,9 +173,36 @@ Player* Map::getPlayer() const {
     return player;
 }
 
+std::vector<Bullet*> Map::getAllBullets() const {
+    std::vector<Bullet*> res;
+
+    std::vector<Bullet*> playerBullets = player->getWeapon()->getBullets();
+    res.insert(res.end(), playerBullets.begin(), playerBullets.end());
+
+    for (const Enemy* enemy : enemies) {
+        Weapon* weapon = enemy->getWeapon();
+        if (!weapon) continue;
+
+        std::vector<Bullet*> enemyBullets = weapon->getBullets();
+        res.insert(res.end(), enemyBullets.begin(), enemyBullets.end());
+    }
+
+    return res;
+}
+
 Enemy* Map::getEnemy(H2DE_LevelObject* object) const {
     auto it = std::find_if(enemies.begin(), enemies.end(), [object](Enemy* enemy) {
         return object == enemy->getObject();
     });
     return (it != enemies.end()) ? *it : nullptr;
+}
+
+Bullet* Map::getBullet(H2DE_LevelObject* object) const {
+    std::vector<Bullet*> allBullets = getAllBullets();
+
+    auto it = std::find_if(allBullets.begin(), allBullets.end(), [object](Bullet* bullet) {
+        return object == bullet->getObject();
+    });
+
+    return (it != allBullets.end()) ? *it : nullptr;
 }

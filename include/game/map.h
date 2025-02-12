@@ -6,6 +6,7 @@
 class Game;
 class Player;
 class Enemy;
+class Bullet;
 
 class Map {
 private:
@@ -28,8 +29,13 @@ private:
     void destroyEnemies();
     void destroyPlayer();
 
+    void updatePlayer();
+    void updateEnemies();
+
     void summonEnemy(int id, float size);
     void summonEnemy(int id, H2DE_LevelPos pos, float size);
+
+    std::vector<Bullet*> getAllBullets() const;
 
 public:
     Map(Game* game);
@@ -40,6 +46,7 @@ public:
     static int getIndex(float yPos, int index);
     Player* getPlayer() const;
     Enemy* getEnemy(H2DE_LevelObject* object) const;
+    Bullet* getBullet(H2DE_LevelObject* object) const;
 };
 
 #endif

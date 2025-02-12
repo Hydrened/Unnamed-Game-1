@@ -13,6 +13,8 @@ private:
     BulletData data;
     float angle;
 
+    bool hit = false;
+
     H2DE_LevelObject* object = nullptr;
     H2DE_LevelVelocity velocity;
     std::vector<Entity*> damagedEntities; 
@@ -25,6 +27,13 @@ public:
     ~Bullet();
 
     void update();
+
+    H2DE_LevelObject* getObject() const;
+    Weapon* getWeapon() const;
+    BulletData getData() const;
+    bool getHit() const;
+
+    void setHit();
 };
 
 #endif

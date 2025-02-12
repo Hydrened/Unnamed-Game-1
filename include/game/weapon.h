@@ -16,6 +16,9 @@ private:
     H2DE_Timeline* shotTimeline = nullptr;
     std::vector<Bullet*> bullets;
 
+    void updateBullets();
+    void updateBulletsToRemove();
+
 public:
     Weapon(Game* game, Entity* owner, WeaponData data);
     ~Weapon();
@@ -25,6 +28,7 @@ public:
     void update();
 
     Entity* getOwner() const;
+    std::vector<Bullet*> getBullets() const;
 };
 
 #endif
