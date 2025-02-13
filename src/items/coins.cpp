@@ -1,7 +1,7 @@
 #include "items.h"
 
 // INIT
-Coin::Coin(Game* g, H2DE_LevelPos p) : Item(g, p, "coins.php") {
+Coin::Coin(Game* g, H2DE_LevelPos p) : Item(g, p, "coin.png", 4) {
 
 }
 
@@ -10,7 +10,12 @@ Coin::~Coin() {
     std::cout << "Coin cleared" << std::endl;
 }
 
+// EVENTS
+void Coin::collidedImpl() {
+    
+}
+
 // UPDATE
-void Coin::update() {
+void Coin::updateImpl() {
 
 }

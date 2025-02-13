@@ -61,6 +61,7 @@ Entity::~Entity() {
 // EVENTS
 void Entity::kill() {
     dead = true;
+    killImpl();
 }
 
 void Entity::inflictDamages(float damages, float crit) {
@@ -124,7 +125,7 @@ void Entity::updateRedFilter() {
 
 void Entity::updateIndex() {
     H2DE_LevelObjectData* objData = getObjectData();
-    objData->index = Map::getIndex(objData->pos.y, 2);
+    objData->index = Map::getIndex(objData->pos.y, 3);
 }
 
 void Entity::updateWeapon() {

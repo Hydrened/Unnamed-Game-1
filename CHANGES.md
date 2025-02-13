@@ -1,3 +1,15 @@
+## 2.0.4
+#### ADDED
+- items
+- xp
+- coins
+- enemy dropping xp (100%) and coins (5%)
+- item dropping with ranbom velocity
+- player pick up range
+- item accelerating towards player when in pick up range
+#### LIB
+- updated from H2DE-2.0.19 to H2DE-2.0.21
+
 ## 2.0.3
 #### ADDED
 - player taking damage from enemies's bullets

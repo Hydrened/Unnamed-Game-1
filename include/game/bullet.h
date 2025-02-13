@@ -22,6 +22,9 @@ private:
     void initVelocity();
     void initObject();
 
+    void updatePos();
+    void updateIndex();
+
 public:
     Bullet(Game* game, Weapon* weapon, BulletData data, float angle);
     ~Bullet();

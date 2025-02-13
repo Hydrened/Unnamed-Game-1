@@ -17,12 +17,12 @@ protected:
     bool dead = false;
     H2DE_LevelObject* object = nullptr;
     Weapon* weapon = nullptr;
-//     std::vector<AutoWeapon*> autoWeapons;
 
     H2DE_Face facing = H2DE_LEFT_FACE;
     H2DE_Timeline* redFilterTimline = nullptr;
 
     void kill();
+    virtual void killImpl() = 0;
 
     virtual void updateImpl() = 0;
     void updatePos();
@@ -59,21 +59,19 @@ private:
     int xp = 0;
     int coins = 0;
 
+    void killImpl() override;
+
     void updateImpl() override;
     void updateForControls();
     void updateFacingImpl() override;
-//     void updateForItems();
-//     void updateAutoWeapons();
+    void updateForItems();
 
 public:
     Player(Game* game, Map* map, H2DE_LevelPos pos, EntityData data);
     ~Player();
 
-//     void increaseXp(int level);
-//     void increaseCoins(int nb);
-//     void equipAutoWeapon(AutoWeapon* autoWeapon);
-
-//     int getCoins() const;
+    void increaseXp(int level);
+    void increaseCoins(int nb);
 };
 
 
@@ -81,6 +79,8 @@ public:
 class Enemy : public Entity {
 private:
     bool canAttackNow = true;
+    
+    void killImpl() override;
 
     void updateImpl() override;
     void updateFacingImpl() override;

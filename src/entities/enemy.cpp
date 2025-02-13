@@ -44,6 +44,15 @@ bool Enemy::canAttack() const {
     return canAttackNow;
 }
 
+void Enemy::killImpl() {
+    static float enemyDropingCoinProbability = game->getData()->enemyDropingCoin;
+    H2DE_LevelObjectData* objData = getObjectData();
+
+    map->dropXp(objData->pos, data.xpOnDeath);
+    map->getPlayer()->increaseCoins(1);
+    if (H2DE_RandomFloatInRange(0.0f, 100.0f) <= enemyDropingCoinProbability) map->dropCoin(objData->pos);
+}
+
 // UPDATE
 void Enemy::updateImpl() {
     if (!isNearPlayer()) {

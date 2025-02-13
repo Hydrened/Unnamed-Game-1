@@ -49,8 +49,18 @@ Bullet::~Bullet() {
 
 // UPDATE
 void Bullet::update() {
+    updatePos();
+    updateIndex();
+}
+
+void Bullet::updatePos() {
     H2DE_LevelObjectData* objData = H2DE_GetObjectData(object);
     objData->pos = objData->pos + velocity;
+}
+
+void Bullet::updateIndex() {
+    H2DE_LevelObjectData* objData = H2DE_GetObjectData(object);
+    objData->index = Map::getIndex(objData->pos.y, 2);
 }
 
 // GETTER

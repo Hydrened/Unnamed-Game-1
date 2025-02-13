@@ -32,9 +32,23 @@ Player::~Player() {
     std::cout << "Player cleared" << std::endl;
 }
 
+// EVENTS
+void Player::killImpl() {
+    
+}
+
+void Player::increaseXp(int level) {
+    xp += level;
+}
+
+void Player::increaseCoins(int nb) {
+    coins += nb;
+}
+
 // UPDATE
 void Player::updateImpl() {
     updateForControls();
+    updateForItems();
 }
 
 void Player::updateForControls() {
@@ -65,4 +79,20 @@ void Player::updateFacingImpl() {
 
     if (mousePos.x <= objData->pos.x + objData->texture->getData()->size.w / 2) facing = H2DE_LEFT_FACE;
     else facing = H2DE_RIGHT_FACE;
+}
+
+void Player::updateForItems() {
+    H2DE_LevelPos playerCenter = (getObjectData()->hitboxes.at(0).rect + getObjectData()->pos).getCenter();
+
+    for (Item* item : map->getItems()) {
+        H2DE_LevelObjectData* itemData = item->getObjectData();
+        H2DE_LevelPos itemCenter = (itemData->hitboxes.at(0).rect + itemData->pos).getCenter();
+
+        H2DE_LevelPos posDistance = playerCenter - itemCenter;
+        posDistance.x = std::abs(posDistance.x);
+        posDistance.y = std::abs(posDistance.y);
+
+        float distance = std::sqrt(std::pow(posDistance.x, 2) + std::pow(posDistance.y, 2));
+        if (distance <= data.stats.pickup) item->pickUp();
+    }
 }

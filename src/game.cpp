@@ -76,6 +76,20 @@ void Game::handleEvents(SDL_Event event) {
         case SDL_KEYDOWN: {
             SDL_Keycode key = event.key.keysym.sym;
             if (std::find(keysDown.begin(), keysDown.end(), key) == keysDown.end()) keysDown.push_back(key);
+
+            switch (event.key.keysym.sym) {
+                case SDLK_ESCAPE:
+                    if (H2DE_IsPaused(engine)) {
+                        H2DE_StopEngine(engine);
+                    } else H2DE_Pause(engine);
+                    break;
+
+                case SDLK_SPACE:
+                    if (H2DE_IsPaused(engine)) H2DE_Resume(engine);
+                    break;
+
+                default: break;
+            }
             break;
         }
 

@@ -73,7 +73,7 @@ H2DE_LevelObjectData Map::getDecorationObjectData(H2DE_LevelPos pos, TileData ti
     H2DE_LevelObjectData data = H2DE_LevelObjectData();
     data.pos = pos + textureData.offset;
     data.texture = H2DE_CreateTexture(engine, getDecorationTileTextureData(tileData, textureData));
-    data.index = Map::getIndex(data.pos.y, 3);
+    data.index = Map::getIndex(data.pos.y, 4);
 
     H2DE_Hitbox collisionHitbox = H2DE_Hitbox();
     collisionHitbox.rect = { 0.5f, 0.0f, 1.0f, 1.0f };
@@ -141,11 +141,29 @@ void Map::summonEnemy(int id, H2DE_LevelPos pos, float size) {
     enemies.push_back(new Enemy(game, this, pos, entitiesData[id]));
 }
 
+void Map::dropXp(H2DE_LevelPos pos, int level) {
+    static int maxXpLevel = game->getData()->maxXpLevel;
+
+    int i = maxXpLevel;
+    while (i != 0) {
+        if (level >= i) {
+            Xp* xp = new Xp(game, pos, i);
+            items.push_back(xp);
+            level -= i;
+        } else i--;
+    }
+}
+
+void Map::dropCoin(H2DE_LevelPos pos) {
+    items.push_back(new Coin(game, pos));
+}
+
 // UPDATE
 void Map::update() {
     H2DE_TickTimeline(t);
     updatePlayer();
     updateEnemies();
+    updateItems();
 }
 
 void Map::updatePlayer() {
@@ -162,6 +180,18 @@ void Map::updateEnemies() {
     }), enemies.end());
 
     for (Enemy* enemy : enemies) enemy->update();
+}
+
+void Map::updateItems() {
+    items.erase(std::remove_if(items.begin(), items.end(), [](Item* item) {
+        bool toRemove = item->toRemove();
+        if (toRemove) {
+            delete item;
+            return true;
+        } else return false;
+    }), items.end());
+
+    for (Item* item : items) item->update();
 }
 
 // GETTER
@@ -205,4 +235,8 @@ Bullet* Map::getBullet(H2DE_LevelObject* object) const {
     });
 
     return (it != allBullets.end()) ? *it : nullptr;
+}
+
+std::vector<Item*> Map::getItems() const {
+    return items;
 }
