@@ -35,7 +35,7 @@ void Bullet::initObject() {
     hitbox.onCollide = [](H2DE_LevelObject* obj) {
 
     };
-    objData.hitboxes.push_back(hitbox);
+    objData.hitboxes["collision"] = hitbox;
 
     object = H2DE_CreateLevelObject(engine, objData);
 }

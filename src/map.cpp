@@ -79,7 +79,7 @@ H2DE_LevelObjectData Map::getDecorationObjectData(H2DE_LevelPos pos, TileData ti
     collisionHitbox.rect = { 0.5f, 0.0f, 1.0f, 1.0f };
     collisionHitbox.color = { 127, 127, 255, 255 };
     collisionHitbox.collisionIndex = 0;
-    data.hitboxes.push_back(collisionHitbox);
+    data.hitboxes["collision"] = collisionHitbox;
 
     return data;
 }
@@ -158,12 +158,43 @@ void Map::dropCoin(H2DE_LevelPos pos) {
     items.push_back(new Coin(game, pos));
 }
 
+void Map::displayDamages(H2DE_LevelPos pos, float damages, H2DE_ColorRGB color) {
+    static H2DE_Engine* engine = game->getEngine();
+    
+    H2DE_LevelObjectData objData = H2DE_LevelObjectData();
+    objData.pos = pos;
+    objData.index = Map::getIndex(pos.y, 30);
+
+    H2DE_TextData textData = H2DE_TextData();
+    textData.text = std::to_string(static_cast<int>(damages));
+    textData.font = "test";
+    textData.charSize = { 0.3f, 0.5f };
+    textData.spacing = 0.05f;
+    textData.color = color;
+    textData.textAlign = H2DE_TEXT_ALIGN_CENTER;
+    textData.scaleMode = H2DE_SCALE_MODE_NEAREST;
+    objData.texture = H2DE_CreateText(engine, textData);
+
+    H2DE_LevelObject* damageObj = H2DE_CreateLevelObject(engine, objData);
+
+    H2DE_Timeline* damageTimeline = H2DE_CreateTimeline(engine, 400, EASE_OUT, [damageObj, pos](float blend) {
+        H2DE_LevelObjectData* objData = H2DE_GetObjectData(damageObj);
+        objData->pos.y = H2DE_Lerp(pos.y, pos.y - 1.0f, std::clamp(0.0f, 0.75f, blend));
+
+    }, [this, damageObj]() {
+        H2DE_DestroyLevelObject(engine, damageObj);
+    }, 1);
+
+    damageTimelines.push_back(damageTimeline);
+}
+
 // UPDATE
 void Map::update() {
     H2DE_TickTimeline(t);
     updatePlayer();
     updateEnemies();
     updateItems();
+    updateDamageDisplay();
 }
 
 void Map::updatePlayer() {
@@ -192,6 +223,14 @@ void Map::updateItems() {
     }), items.end());
 
     for (Item* item : items) item->update();
+}
+
+void Map::updateDamageDisplay() {
+    for (auto it = damageTimelines.begin(); it != damageTimelines.end(); ) {
+        if (!H2DE_TickTimeline(*it)) {
+            it = damageTimelines.erase(it);
+        } else ++it;
+    }
 }
 
 // GETTER

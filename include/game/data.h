@@ -33,7 +33,7 @@ struct GameData {
     };
 
     std::unordered_map<int, EntityData> entitiesData = { // health, attack, defence, speed, crit, pickup, regeneration
-        { 0, { "player.png", { 10.0f, 1.0f, 0.0f, 0.05f, 5.0f, 3.0f, 0.0f }, H2DE_LevelRect{ 0.0f, 0.0f, 1.0f, 1.0f }, H2DE_LevelRect{ 0.25f, 0.25f, 0.5f, 0.5f }, 0}},
+        { 0, { "player.png", { 10.0f, 1.0f, 0.0f, 0.05f, 5.0f, 2.0f, 0.0f }, H2DE_LevelRect{ 0.0f, 0.0f, 1.0f, 1.0f }, H2DE_LevelRect{ 0.25f, 0.25f, 0.5f, 0.5f }, 0}},
         { 1, { "player.png", { 15.0f, 1.0f, 0.0f, 0.02f, 5.0f, 1.0f, 0.0f }, std::nullopt, H2DE_LevelRect{ 0.25f, 0.25f, 0.5f, 0.5f }, 1}},
     };
 
@@ -45,14 +45,14 @@ struct GameData {
         }},
         { 1, { "m4", "weapon.png", 200, {
             "9mm-bullet.png", { 0.0f, 0.0f, 0.15f, 0.15f },
-                0.2f, 5.0f, false, false
+                0.2f, 8.0f, false, false
             }
         }},
     };
 
     float nearPlayer = 0.2f;
     float critDamageMultiplier = 1.5f;
-    float itemAirResistance = 0.05f;
+    float itemAirResistance = 0.005f;
     float itemSpeed = 0.1f;
     float enemyDropingCoin = 5.0f;
     float pickUpItemSpeedMultiplier = 1.05f;

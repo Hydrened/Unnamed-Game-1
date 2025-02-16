@@ -10,7 +10,7 @@ Item::Item(Game* g, H2DE_LevelPos p, std::string t, int n) : game(g), pos(p), te
 
 void Item::initVelocity() {
     float angle = H2DE_RandomFloatInRange(0.0f, M_PI * 2.0f);
-    velocity = { std::cos(angle), std::sin(angle) };
+    velocity = { std::cos(angle) * 0.1f, std::sin(angle) * 0.1f };
 }
 
 void Item::initObject() {
@@ -37,7 +37,7 @@ void Item::initObject() {
     hitbox.collisionIndex = 1;
     hitbox.color = { 255, 127, 255, 255 };
     hitbox.rect = itemHitboxes[textureName];
-    objData.hitboxes.push_back(hitbox);
+    objData.hitboxes["collision"] = hitbox;
 
     object = H2DE_CreateLevelObject(engine, objData);
 }
@@ -86,11 +86,14 @@ void Item::updatePos() {
     if (pickedUp) {
         H2DE_TickTimeline(pickUpSpeedTimeline);
         H2DE_LevelPos playerPos = game->getMap()->getPlayer()->getObjectData()->pos;
-        H2DE_LevelPos pos = getObjectData()->pos;
+        H2DE_LevelPos futurePos = getObjectData()->pos + velocity;
 
-        float angle = std::atan2(playerPos.y - pos.y, playerPos.x - pos.x);
-        velocity = { std::cos(angle) * pickUpSpeed, std::sin(angle) * pickUpSpeed };
+        float angle = std::atan2(playerPos.y - futurePos.y, playerPos.x - futurePos.x);
+        H2DE_LevelVelocity velocityToAdd = { std::cos(angle), std::sin(angle) };
 
+        velocity += velocityToAdd;
+        velocity *= pickUpSpeed;
+        
     } else {
         if (velocity.isNull()) return;
 
@@ -102,8 +105,6 @@ void Item::updatePos() {
             if (velocity.y < 0.0f) velocity.y = std::min(0.0f, velocity.y + airResistance);
             else velocity.y = std::max(0.0f, velocity.y - airResistance);
         }
-
-        velocity = velocity * (speed / 2);
     }
 
     H2DE_LevelObjectData* data = H2DE_GetObjectData(object);
@@ -119,15 +120,23 @@ void Item::updateForCollisionWithPlayer() {
     H2DE_LevelObjectData* thisData = getObjectData();
     H2DE_LevelObjectData* playerData = game->getMap()->getPlayer()->getObjectData();
 
-    H2DE_LevelRect rect = thisData->hitboxes.at(0).rect + thisData->pos;
-    H2DE_LevelRect playerRect = playerData->hitboxes.at(0).rect + playerData->pos;
+    H2DE_LevelRect rect = thisData->hitboxes["collision"].rect + thisData->pos;
+    H2DE_LevelRect playerRect = playerData->hitboxes["collision"].rect + playerData->pos;
 
     if (rect.collides(playerRect) != H2DE_NO_FACE) collided();
 }
 
 // GETTER
+H2DE_LevelObject* Item::getObject() const {
+    return object;
+}
+
 H2DE_LevelObjectData* Item::getObjectData() const {
     return H2DE_GetObjectData(object);
+}
+
+H2DE_LevelVelocity Item::getVelocity() const {
+    return velocity;
 }
 
 bool Item::toRemove() const {

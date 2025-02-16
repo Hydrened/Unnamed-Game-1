@@ -28,8 +28,8 @@ H2DE_Surface* Entity::getSprite() const {
     return H2DE_CreateSprite(engine, textureData, spriteData);
 }
 
-std::vector<H2DE_Hitbox> Entity::getHitboxes() const {
-    std::vector<H2DE_Hitbox> res;
+std::unordered_map<std::string, H2DE_Hitbox> Entity::getHitboxes() const {
+    std::unordered_map<std::string, H2DE_Hitbox> res;
 
     if (data.collisionHitbox.has_value()) {
         H2DE_Hitbox objectCollisionHitbox = H2DE_Hitbox();
@@ -37,14 +37,14 @@ std::vector<H2DE_Hitbox> Entity::getHitboxes() const {
         objectCollisionHitbox.color = { 127, 127, 255, 255 };
         objectCollisionHitbox.collisionIndex = 0;
         objectCollisionHitbox.snap = true;
-        res.push_back(objectCollisionHitbox);
+        res["collision"] = objectCollisionHitbox;
     }
 
     H2DE_Hitbox objectDamageHitbox = H2DE_Hitbox();
     objectDamageHitbox.rect = data.damageHitbox;
     objectDamageHitbox.color = { 255, 127, 127, 255 };
     objectDamageHitbox.collisionIndex = 1;
-    res.push_back(objectDamageHitbox);
+    res["damage"] = objectDamageHitbox;
 
     return res;
 }
@@ -68,13 +68,22 @@ void Entity::inflictDamages(float damages, float crit) {
     static H2DE_Engine* engine = game->getEngine();
     static float critDamageMultiplier = game->getData()->critDamageMultiplier;
 
-    if (H2DE_RandomFloatInRange(0.0f, 100.0f) < crit) damages *= critDamageMultiplier;
+    bool isCrit = H2DE_RandomFloatInRange(0.0f, 100.0f) < crit;
+    bool isPlayer = dynamic_cast<Player*>(this) != nullptr;
+
+    if (isCrit) damages *= critDamageMultiplier;
     damages = std::max(damages - data.stats.defence, 0.0f);
     data.stats.health = std::max(data.stats.health - damages, 0.0f);
 
-    if (data.stats.health == 0) kill();
+    H2DE_LevelPos textPos = getObjectData()->hitboxes["damage"].rect.getCenter() + getObjectData()->pos;
+    textPos.y -= 0.5f;
+    H2DE_ColorRGB textColor = (isPlayer) ? H2DE_ColorRGB{ 255, 0, 0, 255 } : (isCrit) ? H2DE_ColorRGB{ 255, 255, 0, 255 } : H2DE_ColorRGB{ 255, 255, 255, 255 };
 
-    redFilterTimline = H2DE_CreateTimeline(engine, 100, LINEAR, [this](float blend) {
+    map->displayDamages(textPos, damages, textColor);
+
+    if (data.stats.health == 0) return kill();
+
+    redFilterTimline = H2DE_CreateTimeline(engine, 200, LINEAR, [this](float blend) {
         Uint8 otherThanRed = H2DE_Lerp(0, UINT8_MAX, blend);
         H2DE_GetObjectData(object)->texture->getData()->color = { 255, otherThanRed, otherThanRed, 255 };
     }, [this]() {

@@ -2,7 +2,7 @@
 
 // INIT
 Enemy::Enemy(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
-    getObjectData()->hitboxes.at(0).onCollide = [this](H2DE_LevelObject* object) {
+    getObjectData()->hitboxes["damage"].onCollide = [this](H2DE_LevelObject* object) {
         Bullet* bullet = map->getBullet(object);
 
         if (bullet) {

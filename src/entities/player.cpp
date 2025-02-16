@@ -2,7 +2,7 @@
 
 // INIT
 Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
-    getObjectData()->hitboxes.at(1).onCollide = [this](H2DE_LevelObject* object) {
+    getObjectData()->hitboxes["damage"].onCollide = [this](H2DE_LevelObject* object) {
         Enemy* enemy = map->getEnemy(object);
         Bullet* bullet = map->getBullet(object);
 
@@ -82,11 +82,11 @@ void Player::updateFacingImpl() {
 }
 
 void Player::updateForItems() {
-    H2DE_LevelPos playerCenter = (getObjectData()->hitboxes.at(0).rect + getObjectData()->pos).getCenter();
+    H2DE_LevelPos playerCenter = (getObjectData()->hitboxes["collision"].rect + getObjectData()->pos).getCenter();
 
     for (Item* item : map->getItems()) {
         H2DE_LevelObjectData* itemData = item->getObjectData();
-        H2DE_LevelPos itemCenter = (itemData->hitboxes.at(0).rect + itemData->pos).getCenter();
+        H2DE_LevelPos itemCenter = (itemData->hitboxes["collision"].rect + itemData->pos).getCenter();
 
         H2DE_LevelPos posDistance = playerCenter - itemCenter;
         posDistance.x = std::abs(posDistance.x);

@@ -17,7 +17,7 @@ void Game::initEngine() {
     engineData.fps = 60;
     engineData.window.fullscreen = false;
     engineData.window.saveState = false;
-    engineData.window.title = "Unnamed_Game-2.0.3";
+    engineData.window.title = "Unnamed_Game-2.0.5";
     engineData.window.pos = { 100, 100 };
     engineData.window.size = { 1280, 720 };
     engine = H2DE_CreateEngine(engineData);

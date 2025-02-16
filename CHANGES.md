@@ -1,3 +1,12 @@
+## 2.0.5
+#### ADDED
+- damage display on top of entities
+- xp merge
+#### FIXED
+- items velocity when pickup
+#### LIB
+- updated from H2DE-2.0.21 to H2DE-2.1.1
+
 ## 2.0.4
 #### ADDED
 - items

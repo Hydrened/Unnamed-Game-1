@@ -21,7 +21,6 @@ class H2DE_LevelObject;
 class H2DE_Surface;
 
 /**
- * Types used to identify faces
  * \since H2DE-2.0.2
  */
 enum H2DE_Face {
@@ -33,7 +32,6 @@ enum H2DE_Face {
 };
 
 /**
- * Types used to identify flips
  * \since H2DE-2.0.2
  */
 enum H2DE_Flip {
@@ -43,7 +41,6 @@ enum H2DE_Flip {
 };
 
 /**
- * Types used to identify scale modes
  * \since H2DE-2.0.2
  */
 enum H2DE_ScaleMode {
@@ -53,7 +50,6 @@ enum H2DE_ScaleMode {
 };
 
 /**
- * Types used to identify timeline effects
  * \since H2DE-1.0.9
  */
 enum H2DE_TimelineEffect {
@@ -61,6 +57,15 @@ enum H2DE_TimelineEffect {
     EASE_IN_OUT,                                                                            // Ease in out
     EASE_IN,                                                                                // Ease in
     EASE_OUT,                                                                               // Ease out
+};
+
+/**
+ * \since H2DE-2.1.0
+ */
+enum H2DE_TextAlign {
+    H2DE_TEXT_ALIGN_LEFT,                                                                   // Left
+    H2DE_TEXT_ALIGN_RIGHT,                                                                  // Right
+    H2DE_TEXT_ALIGN_CENTER,                                                                 // Center
 };
 
 /**
@@ -134,9 +139,15 @@ struct H2DE_LevelPos {
     H2DE_LevelPos operator-(const H2DE_LevelPos& other) const;
     H2DE_LevelPos operator*(const float& multiplier) const;
     H2DE_LevelPos operator/(const float& divider) const;
+    H2DE_LevelPos& operator+=(const H2DE_LevelPos& other);
+    H2DE_LevelPos& operator-=(const H2DE_LevelPos& other);
+    H2DE_LevelPos& operator*=(const float& multiplier);
+    H2DE_LevelPos& operator/=(const float& divider);
 
     H2DE_LevelPos operator+(const H2DE_LevelVelocity& velocity) const;
     H2DE_LevelPos operator-(const H2DE_LevelVelocity& velocity) const;
+    H2DE_LevelPos& operator+=(const H2DE_LevelVelocity& velocity);
+    H2DE_LevelPos& operator-=(const H2DE_LevelVelocity& velocity);
 
     bool operator==(const H2DE_LevelPos& other) const;
 
@@ -161,6 +172,10 @@ struct H2DE_LevelSize {
     H2DE_LevelSize operator-(const H2DE_LevelSize& other) const;
     H2DE_LevelSize operator*(const float& multiplier) const;
     H2DE_LevelSize operator/(const float& divider) const;
+    H2DE_LevelSize& operator+=(const H2DE_LevelSize& other);
+    H2DE_LevelSize& operator-=(const H2DE_LevelSize& other);
+    H2DE_LevelSize& operator*=(const float& multiplier);
+    H2DE_LevelSize& operator/=(const float& divider);
 
     bool operator==(const H2DE_LevelSize& other) const;
     bool operator>=(const H2DE_LevelSize& other) const;
@@ -195,8 +210,10 @@ struct H2DE_LevelVelocity {
     H2DE_LevelVelocity operator-(const H2DE_LevelVelocity& other) const;
     H2DE_LevelVelocity operator*(const float& multiplier) const;
     H2DE_LevelVelocity operator/(const float& divider) const;
-
-    H2DE_LevelPos operator+(const H2DE_LevelPos& pos) const;
+    H2DE_LevelVelocity& operator+=(const H2DE_LevelVelocity& other);
+    H2DE_LevelVelocity& operator-=(const H2DE_LevelVelocity& other);
+    H2DE_LevelVelocity& operator*=(const float& multiplier);
+    H2DE_LevelVelocity& operator/=(const float& divider);
     
     bool operator==(const H2DE_LevelVelocity& other) const;
     bool operator>=(const H2DE_LevelVelocity& other) const;
@@ -224,9 +241,13 @@ struct H2DE_LevelRect {
 
     H2DE_LevelRect operator+(const H2DE_LevelPos& pos) const;
     H2DE_LevelRect operator-(const H2DE_LevelPos& pos) const;
+    H2DE_LevelRect& operator+=(const H2DE_LevelPos& pos);
+    H2DE_LevelRect& operator-=(const H2DE_LevelPos& pos);
 
     H2DE_LevelRect operator+(const H2DE_LevelSize& size) const;
     H2DE_LevelRect operator-(const H2DE_LevelSize& size) const;
+    H2DE_LevelRect& operator+=(const H2DE_LevelSize& size);
+    H2DE_LevelRect& operator-=(const H2DE_LevelSize& size);
 
     /**
      * Gets the level position from the rectangle
@@ -495,6 +516,20 @@ struct H2DE_SpriteData {
 };
 
 /**
+ * Types used to identify text data
+ * \since H2DE-2.1.0
+ */
+struct H2DE_TextData {
+    std::string text = "";                                                              // Written text
+    std::string font = "";                                                              // Font of the text
+    H2DE_LevelSize charSize = { 0.6f, 1.0f };                                           // Font height
+    H2DE_TextAlign textAlign = H2DE_TEXT_ALIGN_LEFT;                                    // Text alignment
+    H2DE_ColorRGB color = { 255, 255, 255, 255 };                                       // RGB color of the text
+    float spacing = 0.1f;                                                               // Spacing between letters 
+    H2DE_ScaleMode scaleMode = H2DE_SCALE_MODE_LINEAR;                                  // Scale mode the texture will be rendered by
+};
+
+/**
  * Types used to identify hitboxes data
  * \since H2DE-2.0.5
  */
@@ -523,9 +558,9 @@ struct H2DE_LevelObjectTransform {
 struct H2DE_LevelObjectData {
     H2DE_LevelPos pos = { 0.0f, 0.0f };                                                 // Level position of the level object
     H2DE_LevelVelocity velocity = { 0.0f, 0.0f };                                       // Level velocity of the level object
-    std::vector<H2DE_Hitbox> hitboxes = {};                                             // Hitboxes of the level object
+    std::unordered_map<std::string, H2DE_Hitbox> hitboxes = {};                         // Hitboxes of the level object
 
-    H2DE_Surface* texture;                                                              // Texture / sprite of the level object
+    H2DE_Surface* texture;                                                              // Texture / sprite / text of the level object
 
     bool absolute = false;                                                              // Whether the level object is absolute
     bool gravity = false;                                                               // Whether the level object has default gravity

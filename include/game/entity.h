@@ -23,6 +23,7 @@ protected:
 
     void kill();
     virtual void killImpl() = 0;
+    void createDamageDispayObject(float damages, bool crit);
 
     virtual void updateImpl() = 0;
     void updatePos();
@@ -34,7 +35,7 @@ protected:
     void updateWeapon();
 
     H2DE_Surface* getSprite() const;
-    std::vector<H2DE_Hitbox> getHitboxes() const;
+    std::unordered_map<std::string, H2DE_Hitbox> getHitboxes() const;
 
 public:
     Entity(Game* game, Map* map, H2DE_LevelPos pos, EntityData data);

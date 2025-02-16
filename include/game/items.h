@@ -10,13 +10,11 @@ private:
     H2DE_LevelPos pos;
     H2DE_LevelVelocity velocity = { 0.0f, 0.0f };
 
+    H2DE_LevelObject* object = nullptr;
     std::string textureName;
     int nbFrames;
-    H2DE_LevelObject* object = nullptr;
-    bool pickedUp = false;
     H2DE_Timeline* pickUpSpeedTimeline = nullptr;
     float pickUpSpeed;
-    bool remove = false;
 
     void initVelocity();
     void initObject();
@@ -29,6 +27,10 @@ private:
     void updateIndex();
     void updateForCollisionWithPlayer();
 
+protected:
+    bool remove = false;
+    bool pickedUp = false;
+
 public:
     Item(Game* game, H2DE_LevelPos pos, std::string textureName, int nbFrames);
     virtual ~Item();
@@ -37,7 +39,9 @@ public:
 
     void pickUp();
 
+    H2DE_LevelObject* getObject() const;
     H2DE_LevelObjectData* getObjectData() const;
+    H2DE_LevelVelocity getVelocity() const;
     bool toRemove() const;
 };
 
@@ -49,12 +53,16 @@ private:
     int level;
 
     void collidedImpl() override;
+    void increaseLevel();
 
     void updateImpl() override;
+    void updateMerge();
 
 public:
     Xp(Game* game, H2DE_LevelPos pos, int level);
     ~Xp();
+
+    int getLevel() const;
 };
 
 

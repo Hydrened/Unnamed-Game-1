@@ -1,7 +1,7 @@
 #include "items.h"
 
 // INIT
-Coin::Coin(Game* g, H2DE_LevelPos p) : Item(g, p, "coin.png", 4) {
+Coin::Coin(Game* g, H2DE_LevelPos p) : Item(g, p, "coin.png", 4), game(g) {
 
 }
 

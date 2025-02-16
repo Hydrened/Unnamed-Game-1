@@ -20,6 +20,7 @@ private:
     std::unordered_map<H2DE_LevelPos, Tile*> tiles;
 
     H2DE_Timeline* t = nullptr;
+    std::vector<H2DE_Timeline*> damageTimelines;
 
     void initPlayer();
     void generate();
@@ -35,6 +36,7 @@ private:
     void updatePlayer();
     void updateEnemies();
     void updateItems();
+    void updateDamageDisplay();
 
     void summonEnemy(int id, float size);
     void summonEnemy(int id, H2DE_LevelPos pos, float size);
@@ -49,6 +51,8 @@ public:
 
     void dropXp(H2DE_LevelPos pos, int level);
     void dropCoin(H2DE_LevelPos pos);
+
+    void displayDamages(H2DE_LevelPos pos, float damages, H2DE_ColorRGB color);
 
     static int getIndex(float yPos, int index);
     Player* getPlayer() const;
