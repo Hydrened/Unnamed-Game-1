@@ -13,6 +13,7 @@ protected:
     Map* map;
     H2DE_LevelVelocity velocity = { 0.0f, 0.0f };
     EntityData data;
+    int health;
 
     bool dead = false;
     H2DE_LevelObject* object = nullptr;
@@ -21,9 +22,18 @@ protected:
     H2DE_Face facing = H2DE_LEFT_FACE;
     H2DE_Timeline* redFilterTimline = nullptr;
 
+    H2DE_Timeline* regenerationTimline = nullptr;
+
+    void initObject(H2DE_LevelPos pos);
+    void initRegeneration();
+
+    void destroyObject();
+    void destroyWeapon();
+    void destroyTimelines();
+
     void kill();
     virtual void killImpl() = 0;
-    void createDamageDispayObject(float damages, bool crit);
+    virtual void inflictDamagesImpl(int damages, bool isCrit) = 0;
 
     virtual void updateImpl() = 0;
     void updatePos();
@@ -31,11 +41,9 @@ protected:
     void updateFacing();
     void updateAnimation(H2DE_LevelPos defaultPos);
     void updateRedFilter();
+    void updateRegeneration();
     void updateIndex();
     void updateWeapon();
-
-    H2DE_Surface* getSprite() const;
-    std::unordered_map<std::string, H2DE_Hitbox> getHitboxes() const;
 
 public:
     Entity(Game* game, Map* map, H2DE_LevelPos pos, EntityData data);
@@ -43,13 +51,14 @@ public:
 
     void update();
 
-    void inflictDamages(float damages, float crit);
+    void inflictDamages(int damages, float crit);
     void equipWeapon(int id); 
 
     EntityData getData() const;
     H2DE_LevelObject* getObject() const;
     H2DE_LevelObjectData* getObjectData() const;
     Weapon* getWeapon() const;
+    int getHealth() const;
     bool isDead() const;
 };
 
@@ -59,8 +68,13 @@ class Player : public Entity {
 private:
     int xp = 0;
     int coins = 0;
+    int level = 1;
 
+    void initDamageCollision();
+    
     void killImpl() override;
+    void nextLevel();
+    void inflictDamagesImpl(int damages, bool isCrit) override;
 
     void updateImpl() override;
     void updateForControls();
@@ -71,8 +85,11 @@ public:
     Player(Game* game, Map* map, H2DE_LevelPos pos, EntityData data);
     ~Player();
 
-    void increaseXp(int level);
+    void increaseXp(int value);
     void increaseCoins(int nb);
+
+    int getLevel() const;
+    int getXp() const;
 };
 
 
@@ -82,6 +99,7 @@ private:
     bool canAttackNow = true;
     
     void killImpl() override;
+    void inflictDamagesImpl(int damages, bool isCrit) override;
 
     void updateImpl() override;
     void updateFacingImpl() override;

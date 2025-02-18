@@ -1,3 +1,20 @@
+## 2.0.6
+#### ADDED
+- time left
+- player health bar
+- player xp bar
+- player health indicator
+- player level indicator
+- bigger enemies can spawn
+- entity regeneration
+- kill count
+#### FIXED
+- enemies focus player's center
+- item drop from enemies's center
+- item picked up going to player's center
+#### LIB
+- updated from H2DE-2.1.1 to H2DE-2.1.3
+
 ## 2.0.5
 #### ADDED
 - damage display on top of entities

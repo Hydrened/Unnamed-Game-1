@@ -2,6 +2,11 @@
 
 // INIT
 Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
+    initDamageCollision();
+    equipWeapon(0);
+}
+
+void Player::initDamageCollision() {
     getObjectData()->hitboxes["damage"].onCollide = [this](H2DE_LevelObject* object) {
         Enemy* enemy = map->getEnemy(object);
         Bullet* bullet = map->getBullet(object);
@@ -23,13 +28,11 @@ Player::Player(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p,
             }
         }
     };
-
-    equipWeapon(0);
 }
 
 // CLEANUP
 Player::~Player() {
-    std::cout << "Player cleared" << std::endl;
+    if (game->isDebuging()) std::cout << "Player cleared" << std::endl;
 }
 
 // EVENTS
@@ -37,12 +40,24 @@ void Player::killImpl() {
     
 }
 
-void Player::increaseXp(int level) {
-    xp += level;
+void Player::increaseXp(int value) {
+    xp += value;
+
+    if (map->getXpLevelPercentage() == 1.0f) nextLevel();
+    map->getUi()->refreshXpBar();
+}
+
+void Player::nextLevel() {
+    level++;
+    map->getUi()->refreshXpBar();
 }
 
 void Player::increaseCoins(int nb) {
     coins += nb;
+}
+
+void Player::inflictDamagesImpl(int damages, bool isCrit) {
+    map->getUi()->refreshHealthBar();
 }
 
 // UPDATE
@@ -77,7 +92,7 @@ void Player::updateFacingImpl() {
     H2DE_LevelPos mousePos = H2DE_ConvertToLevelPos(engine, game->getMousePos());
     H2DE_LevelObjectData* objData = H2DE_GetObjectData(object);
 
-    if (mousePos.x <= objData->pos.x + objData->texture->getData()->size.w / 2) facing = H2DE_LEFT_FACE;
+    if (mousePos.x <= objData->pos.x + H2DE_GetTextureData(objData->texture)->size.w / 2) facing = H2DE_LEFT_FACE;
     else facing = H2DE_RIGHT_FACE;
 }
 
@@ -95,4 +110,13 @@ void Player::updateForItems() {
         float distance = std::sqrt(std::pow(posDistance.x, 2) + std::pow(posDistance.y, 2));
         if (distance <= data.stats.pickup) item->pickUp();
     }
+}
+
+// GETTER
+int Player::getLevel() const {
+    return level;
+}
+
+int Player::getXp() const {
+    return xp;
 }

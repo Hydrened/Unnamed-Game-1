@@ -11,13 +11,13 @@ namespace std {
 }
 
 struct EntityStats {
-    float health;
-    float attack;
-    float defence;
+    int health;
+    int attack;
+    int defence;
     float speed;
     float crit;
     float pickup;
-    float regeneration;
+    int regeneration;
 };
 
 struct TextureData {
@@ -27,6 +27,7 @@ struct TextureData {
 
 struct EntityData {
     std::string textureName;
+    H2DE_LevelSize textureSize;
     EntityStats stats;
     std::optional<H2DE_LevelRect> collisionHitbox;
     H2DE_LevelRect damageHitbox;
@@ -57,7 +58,7 @@ struct BulletData {
     std::string textureName;
     H2DE_LevelRect rect;
     float speed;
-    float damage;
+    int damage;
     bool piercing;
     bool explosive;
 };

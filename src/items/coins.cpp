@@ -7,7 +7,7 @@ Coin::Coin(Game* g, H2DE_LevelPos p) : Item(g, p, "coin.png", 4), game(g) {
 
 // CLEANUP
 Coin::~Coin() {
-    std::cout << "Coin cleared" << std::endl;
+    if (game->isDebuging()) std::cout << "Coin cleared" << std::endl;
 }
 
 // EVENTS

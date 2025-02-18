@@ -7,12 +7,12 @@ Xp::Xp(Game* g, H2DE_LevelPos p, int l) : Item(g, p, "xp-lvl-" + std::to_string(
 
 // CLEANUP
 Xp::~Xp() {
-    std::cout << "Xp cleared" << std::endl;
+    if (game->isDebuging()) std::cout << "Xp cleared" << std::endl;
 }
 
 // EVENTS
 void Xp::collidedImpl() {
-    
+    game->getMap()->getPlayer()->increaseXp(level);
 }
 
 void Xp::increaseLevel() {
@@ -20,7 +20,7 @@ void Xp::increaseLevel() {
 
     if (level >= maxXpLevel) return;
     level++;
-    H2DE_GetObjectData(getObject())->texture->getData()->name = "xp-lvl-" + std::to_string(level) + ".png";
+    H2DE_GetTextureData(H2DE_GetObjectData(getObject())->texture)->name = "xp-lvl-" + std::to_string(level) + ".png";
 }
 
 // UPDATE

@@ -3,6 +3,7 @@
 // INIT
 Game::Game() {
     initEngine();
+    initFont();
     initMap();
     initCamera();
 
@@ -17,7 +18,7 @@ void Game::initEngine() {
     engineData.fps = 60;
     engineData.window.fullscreen = false;
     engineData.window.saveState = false;
-    engineData.window.title = "Unnamed_Game-2.0.5";
+    engineData.window.title = "Unnamed_Game-2.0.6";
     engineData.window.pos = { 100, 100 };
     engineData.window.size = { 1280, 720 };
     engine = H2DE_CreateEngine(engineData);
@@ -31,6 +32,15 @@ void Game::initEngine() {
     H2DE_SetGameUpdateCall(engine, [this]() {
         update();
     });
+}
+
+void Game::initFont() {
+    H2DE_Font* fontData = new H2DE_Font();
+    fontData->textureName = "test.png";
+    fontData->charOrder = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.:,;'" + std::string("\"") + std::string("(!?)+-*/=");
+    fontData->charSize = { 5, 7 };
+    fontData->scaleMode = H2DE_SCALE_MODE_NEAREST;
+    H2DE_InitFont(engine, "test", fontData);
 }
 
 void Game::initMap() {
@@ -60,9 +70,9 @@ void Game::initCamera() {
 Game::~Game() {
     delete map;
     delete data;
-    std::cout << "Game cleared" << std::endl;
+    if (debug) std::cout << "Game cleared" << std::endl;
     H2DE_DestroyEngine(engine);
-    std::cout << "Engine cleared" << std::endl;
+    if (debug) std::cout << "Engine cleared" << std::endl;
 }
 
 // RUN
@@ -141,4 +151,8 @@ std::vector<int> Game::getMouseButtonsDown() const {
 
 H2DE_AbsPos Game::getMousePos() const {
     return mousePos;
+}
+
+bool Game::isDebuging() const {
+    return debug;
 }

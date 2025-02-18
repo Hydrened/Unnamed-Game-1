@@ -3,11 +3,13 @@
 // INIT
 Map::Map(Game* g) : game(g) {
     initPlayer();
+    initInterface();
     generate();
 
     static H2DE_Engine* engine = game->getEngine();
-    t = H2DE_CreateTimeline(engine, 1000, LINEAR, NULL, [this]() {
-        summonEnemy(1, 1.0f);
+    t = H2DE_CreateTimeline(engine, 500, LINEAR, NULL, [this]() {
+        bool big = H2DE_RandomFloatInRange(0.0f, 1.0f) < 0.05;
+        summonEnemy(1, big);
     }, -1);
 }
 
@@ -16,6 +18,10 @@ void Map::initPlayer() {
 
     EntityData playerData = entitiesData[0];
     player = new Player(game, this, { 0.0f, 0.0f }, playerData);
+}
+
+void Map::initInterface() {
+    ui = new Interface(game, this);
 }
 
 void Map::generate() {
@@ -90,7 +96,9 @@ Map::~Map() {
     destroyTiles();
     destroyEnemies();
     destroyPlayer();
-    std::cout << "Map cleared" << std::endl;
+    destroyDamageTimelines();
+    destroyInterface();
+    if (game->isDebuging()) std::cout << "Map cleared" << std::endl;
 }
 
 void Map::destroyTiles() {
@@ -113,8 +121,16 @@ void Map::destroyPlayer() {
     delete player;
 }
 
+void Map::destroyDamageTimelines() {
+    for (H2DE_Timeline* timeline : damageTimelines) delete timeline;
+}
+
+void Map::destroyInterface() {
+    if (ui) delete ui;
+}
+
 // EVENTS
-void Map::summonEnemy(int id, float size) {
+void Map::summonEnemy(int id, bool big) {
     static H2DE_Engine* engine = game->getEngine();
     static H2DE_Camera* camera = H2DE_GetCamera(engine);
     static GameData* gameData = game->getData();
@@ -133,12 +149,29 @@ void Map::summonEnemy(int id, float size) {
     else if (rY == 1.0f) rY += 0.1f;
 
     H2DE_LevelPos pos = { rX * camSize.w, rY * camSize.h };
-    summonEnemy(id, pos + H2DE_GetCameraPos(camera), size);
+    summonEnemy(id, pos + H2DE_GetCameraPos(camera), big);
 }
 
-void Map::summonEnemy(int id, H2DE_LevelPos pos, float size) {
+void Map::summonEnemy(int id, H2DE_LevelPos pos, bool big) {
     static std::unordered_map<int, EntityData> entitiesData = game->getData()->entitiesData;
-    enemies.push_back(new Enemy(game, this, pos, entitiesData[id]));
+    static float bigEnemySizeMultiplier = game->getData()->bigEnemySizeMultiplier;
+    static float bigEnemyStatsMultiplier = game->getData()->bigEnemyStatsMultiplier;
+
+    EntityData entityData = entitiesData[id];
+    if (big) {
+        entityData.textureSize *= bigEnemySizeMultiplier;
+        entityData.stats.health *= bigEnemyStatsMultiplier;
+        entityData.stats.attack *= bigEnemyStatsMultiplier;
+
+        entityData.damageHitbox.x *= bigEnemySizeMultiplier;
+        entityData.damageHitbox.y *= bigEnemySizeMultiplier;
+        entityData.damageHitbox.w *= bigEnemySizeMultiplier;
+        entityData.damageHitbox.h *= bigEnemySizeMultiplier;
+
+        entityData.xpOnDeath = 2;
+    }
+
+    enemies.push_back(new Enemy(game, this, pos, entityData));
 }
 
 void Map::dropXp(H2DE_LevelPos pos, int level) {
@@ -158,7 +191,12 @@ void Map::dropCoin(H2DE_LevelPos pos) {
     items.push_back(new Coin(game, pos));
 }
 
-void Map::displayDamages(H2DE_LevelPos pos, float damages, H2DE_ColorRGB color) {
+void Map::enemyKilled() {
+    killCount++;
+    ui->refreshKillCount(killCount);
+}
+
+void Map::displayHealthActivity(H2DE_LevelPos pos, int healthActivity, H2DE_ColorRGB color) {
     static H2DE_Engine* engine = game->getEngine();
     
     H2DE_LevelObjectData objData = H2DE_LevelObjectData();
@@ -166,13 +204,12 @@ void Map::displayDamages(H2DE_LevelPos pos, float damages, H2DE_ColorRGB color) 
     objData.index = Map::getIndex(pos.y, 30);
 
     H2DE_TextData textData = H2DE_TextData();
-    textData.text = std::to_string(static_cast<int>(damages));
-    textData.font = "test";
-    textData.charSize = { 0.3f, 0.5f };
+    textData.text = std::to_string(healthActivity);
+    textData.fontName = "test";
+    textData.charSize = { 0.25f, 0.35f };
     textData.spacing = 0.05f;
     textData.color = color;
     textData.textAlign = H2DE_TEXT_ALIGN_CENTER;
-    textData.scaleMode = H2DE_SCALE_MODE_NEAREST;
     objData.texture = H2DE_CreateText(engine, textData);
 
     H2DE_LevelObject* damageObj = H2DE_CreateLevelObject(engine, objData);
@@ -195,6 +232,7 @@ void Map::update() {
     updateEnemies();
     updateItems();
     updateDamageDisplay();
+    updateUi();
 }
 
 void Map::updatePlayer() {
@@ -233,9 +271,17 @@ void Map::updateDamageDisplay() {
     }
 }
 
+void Map::updateUi() {
+    ui->update();
+}
+
 // GETTER
 int Map::getIndex(float yPos, int index) {
     return std::ceil(yPos) * 10 + index;
+}
+
+Interface* Map::getUi() const {
+    return ui;
 }
 
 Player* Map::getPlayer() const {
@@ -278,4 +324,31 @@ Bullet* Map::getBullet(H2DE_LevelObject* object) const {
 
 std::vector<Item*> Map::getItems() const {
     return items;
+}
+
+float Map::getXpLevelPercentage() const {
+    int level = player->getLevel();
+    int xp = player->getXp();
+
+    int totalXpForCurrentLevel = totalXpForLevel(level);
+    int xpInCurrentLevel = xp - totalXpForCurrentLevel;
+    int xpForNextLevel = xpForLevel(level + 1);
+
+    return std::clamp(0.0f, 1.0f, static_cast<float>(xpInCurrentLevel) / xpForNextLevel);
+}
+
+int Map::xpForLevel(unsigned int level) const {
+    if (level < 2) return 0;
+    static int firstLevelNeededXp = game->getData()->firstLevelNeededXp;
+    static float levelGrowthFactor = game->getData()->levelGrowthFactor;
+
+    return static_cast<int>(std::ceil(firstLevelNeededXp * std::pow(levelGrowthFactor, level - 2)));
+}
+
+int Map::totalXpForLevel(unsigned int level) const {
+    if (level < 2) return 0;
+    static int firstLevelNeededXp = game->getData()->firstLevelNeededXp;
+    static float levelGrowthFactor = game->getData()->levelGrowthFactor;
+
+    return static_cast<int>(std::ceil(firstLevelNeededXp * (std::pow(levelGrowthFactor, level - 1) - 1) / (levelGrowthFactor - 1)));
 }

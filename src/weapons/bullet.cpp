@@ -44,7 +44,7 @@ void Bullet::initObject() {
 Bullet::~Bullet() {
     static H2DE_Engine* engine = game->getEngine();
     H2DE_DestroyLevelObject(engine, object);
-    std::cout << "Bullet Cleared" << std::endl;
+    if (game->isDebuging()) std::cout << "Bullet Cleared" << std::endl;
 }
 
 // UPDATE

@@ -1,23 +1,22 @@
 #include "entity.h"
+#undef min
 #undef max
 
 // INIT
-Entity::Entity(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : game(g), map(m), data(d) {
-    H2DE_Engine* engine = game->getEngine();
-
-    H2DE_LevelObjectData objectData = H2DE_LevelObjectData();
-    objectData.pos = p;
-    objectData.texture = getSprite();
-    objectData.hitboxes = getHitboxes();
-    object = H2DE_CreateLevelObject(engine, objectData);
+Entity::Entity(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : game(g), map(m), data(d), health(d.stats.health) {
+    initObject(p);
+    if (data.stats.regeneration > 0.0f) initRegeneration();
 }
 
-H2DE_Surface* Entity::getSprite() const {
-    H2DE_Engine* engine = game->getEngine();
+void Entity::initObject(H2DE_LevelPos pos) {
+    static H2DE_Engine* engine = game->getEngine();
+
+    H2DE_LevelObjectData objectData = H2DE_LevelObjectData();
+    objectData.pos = pos;
 
     H2DE_TextureData textureData = H2DE_TextureData();
     textureData.name = data.textureName;
-    textureData.size = { 1.0f, 1.0f };
+    textureData.size = data.textureSize;
     textureData.scaleMode = H2DE_SCALE_MODE_NEAREST;
 
     H2DE_SpriteData spriteData = H2DE_SpriteData();
@@ -25,11 +24,7 @@ H2DE_Surface* Entity::getSprite() const {
     spriteData.delay = 200;
     spriteData.nbFrame = 4;
 
-    return H2DE_CreateSprite(engine, textureData, spriteData);
-}
-
-std::unordered_map<std::string, H2DE_Hitbox> Entity::getHitboxes() const {
-    std::unordered_map<std::string, H2DE_Hitbox> res;
+    objectData.texture = H2DE_CreateSprite(engine, textureData, spriteData);
 
     if (data.collisionHitbox.has_value()) {
         H2DE_Hitbox objectCollisionHitbox = H2DE_Hitbox();
@@ -37,25 +32,56 @@ std::unordered_map<std::string, H2DE_Hitbox> Entity::getHitboxes() const {
         objectCollisionHitbox.color = { 127, 127, 255, 255 };
         objectCollisionHitbox.collisionIndex = 0;
         objectCollisionHitbox.snap = true;
-        res["collision"] = objectCollisionHitbox;
+        objectData.hitboxes["collision"] = objectCollisionHitbox;
     }
 
     H2DE_Hitbox objectDamageHitbox = H2DE_Hitbox();
     objectDamageHitbox.rect = data.damageHitbox;
     objectDamageHitbox.color = { 255, 127, 127, 255 };
     objectDamageHitbox.collisionIndex = 1;
-    res["damage"] = objectDamageHitbox;
+    objectData.hitboxes["damage"] = objectDamageHitbox;
 
-    return res;
+    object = H2DE_CreateLevelObject(engine, objectData);
+}
+
+void Entity::initRegeneration() {
+    static H2DE_Engine* engine = game->getEngine();
+
+    regenerationTimline = H2DE_CreateTimeline(engine, 1000, LINEAR, NULL, [this]() {
+        int beforeRegen = health;
+        health = std::min(health + data.stats.regeneration, data.stats.health);
+
+        if (beforeRegen != health) {
+            if (dynamic_cast<Player*>(this)) map->getUi()->refreshHealthBar();
+
+            H2DE_LevelObjectData* objData = H2DE_GetObjectData(object);
+            H2DE_LevelPos textPos = objData->hitboxes["damage"].rect.getCenter() + objData->pos;
+            textPos.y -= 0.5f;
+            map->displayHealthActivity(textPos, data.stats.regeneration, { 0, 255, 0, 255 });
+        }
+    }, -1);
 }
 
 // CLEANUP
 Entity::~Entity() {
+    destroyObject();
+    destroyWeapon();
+    destroyTimelines();
+    if (game->isDebuging()) std::cout << "└─> Entity cleared" << std::endl;
+}
+
+void Entity::destroyObject() {
     static H2DE_Engine* engine = game->getEngine();
-    if (weapon) delete weapon;
-    if (redFilterTimline) delete redFilterTimline;
     H2DE_DestroyLevelObject(engine, object);
-    std::cout << "└─> Entity cleared" << std::endl;
+}
+
+void Entity::destroyWeapon() {
+    if (weapon) delete weapon;
+}
+
+void Entity::destroyTimelines() {
+    if (redFilterTimline) delete redFilterTimline;
+    if (regenerationTimline) delete regenerationTimline;
 }
 
 // EVENTS
@@ -64,7 +90,7 @@ void Entity::kill() {
     killImpl();
 }
 
-void Entity::inflictDamages(float damages, float crit) {
+void Entity::inflictDamages(int damages, float crit) {
     static H2DE_Engine* engine = game->getEngine();
     static float critDamageMultiplier = game->getData()->critDamageMultiplier;
 
@@ -72,22 +98,24 @@ void Entity::inflictDamages(float damages, float crit) {
     bool isPlayer = dynamic_cast<Player*>(this) != nullptr;
 
     if (isCrit) damages *= critDamageMultiplier;
-    damages = std::max(damages - data.stats.defence, 0.0f);
-    data.stats.health = std::max(data.stats.health - damages, 0.0f);
+    damages = std::max(damages - data.stats.defence, 0);
+    health = std::max(health - damages, 0);
 
     H2DE_LevelPos textPos = getObjectData()->hitboxes["damage"].rect.getCenter() + getObjectData()->pos;
     textPos.y -= 0.5f;
     H2DE_ColorRGB textColor = (isPlayer) ? H2DE_ColorRGB{ 255, 0, 0, 255 } : (isCrit) ? H2DE_ColorRGB{ 255, 255, 0, 255 } : H2DE_ColorRGB{ 255, 255, 255, 255 };
 
-    map->displayDamages(textPos, damages, textColor);
+    map->displayHealthActivity(textPos, damages, textColor);
 
-    if (data.stats.health == 0) return kill();
+    inflictDamagesImpl(damages, isCrit);
+
+    if (health == 0) return kill();
 
     redFilterTimline = H2DE_CreateTimeline(engine, 200, LINEAR, [this](float blend) {
         Uint8 otherThanRed = H2DE_Lerp(0, UINT8_MAX, blend);
-        H2DE_GetObjectData(object)->texture->getData()->color = { 255, otherThanRed, otherThanRed, 255 };
+        H2DE_GetTextureData(H2DE_GetObjectData(object)->texture)->color = { 255, otherThanRed, otherThanRed, 255 };
     }, [this]() {
-        H2DE_GetObjectData(object)->texture->getData()->color = { 255, 255, 255, 255 };
+        H2DE_GetTextureData(H2DE_GetObjectData(object)->texture)->color = { 255, 255, 255, 255 };
         delete redFilterTimline;
         redFilterTimline = nullptr;
     }, 0);
@@ -102,11 +130,13 @@ void Entity::equipWeapon(int id) {
 // UPDATE
 void Entity::update() {
     H2DE_LevelPos defaultPos = H2DE_GetObjectData(object)->pos;
+
     updateImpl();
     updatePos();
     updateFacingImpl();
     updateFacing();
     updateAnimation(defaultPos);
+    updateRegeneration();
     updateRedFilter();
     updateIndex();
     updateWeapon();
@@ -130,6 +160,10 @@ void Entity::updateAnimation(H2DE_LevelPos defaultPos) {
 
 void Entity::updateRedFilter() {
     if (redFilterTimline) H2DE_TickTimeline(redFilterTimline);
+}
+
+void Entity::updateRegeneration() {
+    if (regenerationTimline) H2DE_TickTimeline(regenerationTimline);
 }
 
 void Entity::updateIndex() {
@@ -156,6 +190,10 @@ H2DE_LevelObjectData* Entity::getObjectData() const {
 
 Weapon* Entity::getWeapon() const {
     return weapon;
+}
+
+int Entity::getHealth() const {
+    return health;
 }
 
 bool Entity::isDead() const {

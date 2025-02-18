@@ -19,7 +19,7 @@ void Item::initObject() {
     static std::unordered_map<std::string, H2DE_LevelRect> itemHitboxes = game->getData()->itemHitboxes;
 
     H2DE_LevelObjectData objData = H2DE_LevelObjectData();
-    objData.pos = pos + texturesData[textureName].offset;
+    objData.pos = pos + texturesData[textureName].offset - (texturesData[textureName].size / 2.0f).toPos();
 
     H2DE_TextureData textureData = H2DE_TextureData();
     textureData.name = textureName;
@@ -28,7 +28,7 @@ void Item::initObject() {
     
     H2DE_SpriteData spriteData = H2DE_SpriteData();
     spriteData.defaultAnimationName = "idle";
-    spriteData.delay = 200;
+    spriteData.delay = 150;
     spriteData.nbFrame = nbFrames;
 
     objData.texture = H2DE_CreateSprite(engine, textureData, spriteData);
@@ -47,7 +47,7 @@ Item::~Item() {
     static H2DE_Engine* engine = game->getEngine();
     if (pickUpSpeedTimeline) delete pickUpSpeedTimeline;
     H2DE_DestroyLevelObject(engine, object);
-    std::cout << "└─> Item cleared" << std::endl;
+    if (game->isDebuging()) std::cout << "└─> Item cleared" << std::endl;
 }
 
 // EVENTS
@@ -85,8 +85,12 @@ void Item::updatePos() {
     
     if (pickedUp) {
         H2DE_TickTimeline(pickUpSpeedTimeline);
-        H2DE_LevelPos playerPos = game->getMap()->getPlayer()->getObjectData()->pos;
-        H2DE_LevelPos futurePos = getObjectData()->pos + velocity;
+
+        H2DE_LevelObjectData* thisData = getObjectData();
+        H2DE_LevelObjectData* playerData = game->getMap()->getPlayer()->getObjectData();
+
+        H2DE_LevelPos playerPos = playerData->pos + playerData->hitboxes["damage"].rect.getCenter();
+        H2DE_LevelPos futurePos = thisData->pos + thisData->hitboxes["collision"].rect.getCenter() + velocity;
 
         float angle = std::atan2(playerPos.y - futurePos.y, playerPos.x - futurePos.x);
         H2DE_LevelVelocity velocityToAdd = { std::cos(angle), std::sin(angle) };

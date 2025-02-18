@@ -26,7 +26,7 @@ Weapon::Weapon(Game* g, Entity* o, WeaponData d) : game(g), owner(o), data(d) {
 Weapon::~Weapon() {
     if (shotTimeline) delete shotTimeline;
     for (Bullet* bullet : bullets) delete bullet;
-    std::cout << "Weapon cleared" << std::endl;
+    if (game->isDebuging()) std::cout << "Weapon cleared" << std::endl;
 }
 
 // EVENTS
