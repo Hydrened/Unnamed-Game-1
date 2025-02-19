@@ -18,10 +18,19 @@ private:
     H2DE_AbsPos mousePos = { 0, 0 };
     bool debug = false;
 
+    H2DE_LevelObject* cursor = nullptr;
+
     void initEngine();
     void initFont();
+    void initCursor();
     void initMap();
     void initCamera();
+
+    void destroyMap();
+    void destroyData();
+    
+    void updateCursor();
+    void updateMap();
 
 public:
     Game();

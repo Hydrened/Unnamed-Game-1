@@ -33,8 +33,8 @@ struct GameData {
     };
 
     std::unordered_map<int, EntityData> entitiesData = { // health, attack, defence, speed, crit, pickup, regeneration
-        { 0, { "player.png", { 1.0f, 1.0f }, { 100, 1, 0, 0.05f, 5.0f, 2.0f, 1 }, H2DE_LevelRect{ 0.0f, 0.0f, 1.0f, 1.0f }, H2DE_LevelRect{ 0.25f, 0.25f, 0.5f, 0.5f }, 0}},
-        { 1, { "player.png", { 1.0f, 1.0f }, { 15, 1, 0, 0.02f, 5.0f, 1.0f, 0 }, std::nullopt, H2DE_LevelRect{ 0.25f, 0.25f, 0.5f, 0.5f }, 1}},
+        { 0, { "player.png", { 1.0f, 1.0f }, { 100, 1, 0, 0.05f, 5.0f, 2.0f, 0 }, H2DE_LevelRect{ 0.0f, 0.0f, 1.0f, 1.0f }, H2DE_LevelRect{ 0.25f, 0.25f, 0.5f, 0.5f }, 0}},
+        { 1, { "player.png", { 1.0f, 1.0f }, { 10, 1, 0, 0.02f, 5.0f, 1.0f, 0 }, std::nullopt, H2DE_LevelRect{ 0.25f, 0.25f, 0.5f, 0.5f }, 1}},
     };
 
     std::unordered_map<int, WeaponData> weaponsData = { // speed, damage, piercing, explosive
@@ -62,8 +62,9 @@ struct GameData {
     float cameraPadding = 0.4f;
     float innerPadding = 0.2f;
     float levelGrowthFactor = 1.15f;
-    float bigEnemySizeMultiplier = 1.2f;
-    float bigEnemyStatsMultiplier = 3.0f;
+    float bigEnemySizeMultiplier = 1.35f;
+    float bigEnemyStatsMultiplier = 4.0f;
+    float damageRange = 15.0f;
 
     int enemyAttackDelay = 600;
     int maxXpLevel = 6;

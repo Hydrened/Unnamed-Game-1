@@ -2,6 +2,11 @@
 
 // INIT
 Enemy::Enemy(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d) {
+    initDamageCollision();
+    initAttackTimeline();
+}
+
+void Enemy::initDamageCollision() {
     getObjectData()->hitboxes["damage"].onCollide = [this](H2DE_LevelObject* object) {
         Bullet* bullet = map->getBullet(object);
 
@@ -15,6 +20,15 @@ Enemy::Enemy(Game* g, Map* m, H2DE_LevelPos p, EntityData d) : Entity(g, m, p, d
             }
         }
     };
+}
+
+void Enemy::initAttackTimeline() {
+    static H2DE_Engine* engine = game->getEngine();
+    static int attackDelay = game->getData()->enemyAttackDelay;
+
+    attackTimeline = H2DE_CreateTimeline(engine, attackDelay, LINEAR, NULL, [this]() {
+        canAttackNow = true;
+    }, 0);
 }
 
 // CLEANUP
@@ -36,12 +50,8 @@ bool Enemy::isNearPlayer() {
 }
 
 void Enemy::attacked() {
-    static int attackDelay = game->getData()->enemyAttackDelay;
-
     canAttackNow = false;
-    H2DE_Engine::H2DE_Delay(attackDelay, [this]() {
-        canAttackNow = true;
-    });
+    H2DE_ResetTimeline(attackTimeline);
 }
 
 bool Enemy::canAttack() const {
@@ -65,6 +75,11 @@ void Enemy::inflictDamagesImpl(int damages, bool isCrit) {
 
 // UPDATE
 void Enemy::updateImpl() {
+    updateVelocity();
+    updateAttackTimeline();
+}
+
+void Enemy::updateVelocity() {
     if (!isNearPlayer()) {
         H2DE_LevelObjectData* thisData = getObjectData();
         H2DE_LevelObjectData* playerData = map->getPlayer()->getObjectData();
@@ -75,6 +90,10 @@ void Enemy::updateImpl() {
         float angle = std::atan2(playerPos.y - pos.y, playerPos.x - pos.x);
         velocity = { data.stats.speed * std::cos(angle), data.stats.speed * std::sin(angle) };
     } else velocity = { 0.0f, 0.0f };
+}
+
+void Enemy::updateAttackTimeline() {
+    if (attackTimeline) H2DE_TickTimeline(attackTimeline);
 }
 
 void Enemy::updateFacingImpl() {

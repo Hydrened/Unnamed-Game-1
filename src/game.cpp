@@ -4,6 +4,7 @@
 Game::Game() {
     initEngine();
     initFont();
+    initCursor();
     initMap();
     initCamera();
 
@@ -18,7 +19,7 @@ void Game::initEngine() {
     engineData.fps = 60;
     engineData.window.fullscreen = false;
     engineData.window.saveState = false;
-    engineData.window.title = "Unnamed_Game-2.0.6";
+    engineData.window.title = "Unnamed_Game-2.0.7";
     engineData.window.pos = { 100, 100 };
     engineData.window.size = { 1280, 720 };
     engine = H2DE_CreateEngine(engineData);
@@ -41,6 +42,22 @@ void Game::initFont() {
     fontData->charSize = { 5, 7 };
     fontData->scaleMode = H2DE_SCALE_MODE_NEAREST;
     H2DE_InitFont(engine, "test", fontData);
+}
+
+void Game::initCursor() {
+    H2DE_HideCursor();
+
+    H2DE_LevelObjectData cursorData = H2DE_LevelObjectData();
+    cursorData.pos = { 0.0f, 0.0f };
+    cursorData.index = 10000;
+
+    H2DE_TextureData cursorTextureData = H2DE_TextureData();
+    cursorTextureData.name = "cursor.png";
+    cursorTextureData.size = { 0.35f, 0.5f };
+    cursorTextureData.scaleMode = H2DE_SCALE_MODE_NEAREST;
+    cursorData.texture = H2DE_CreateTexture(engine, cursorTextureData);
+
+    cursor = H2DE_CreateLevelObject(engine, cursorData);
 }
 
 void Game::initMap() {
@@ -68,11 +85,21 @@ void Game::initCamera() {
 
 // CLEANUP
 Game::~Game() {
-    delete map;
-    delete data;
+    H2DE_DestroyLevelObject(engine, cursor);
+    destroyMap();
+    destroyData();
     if (debug) std::cout << "Game cleared" << std::endl;
+
     H2DE_DestroyEngine(engine);
     if (debug) std::cout << "Engine cleared" << std::endl;
+}
+
+void Game::destroyMap() {
+    delete map;
+}
+
+void Game::destroyData() {
+    delete data;
 }
 
 // RUN
@@ -125,6 +152,15 @@ void Game::handleEvents(SDL_Event event) {
 
 // UPDATE
 void Game::update() {
+    updateCursor();
+    updateMap();
+}
+
+void Game::updateCursor() {
+    H2DE_GetObjectData(cursor)->pos = H2DE_ConvertToLevelPos(engine, mousePos);
+}
+
+void Game::updateMap() {
     if (map) map->update();
 }
 

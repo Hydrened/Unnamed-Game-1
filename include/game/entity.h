@@ -97,11 +97,17 @@ public:
 class Enemy : public Entity {
 private:
     bool canAttackNow = true;
+    H2DE_Timeline* attackTimeline = nullptr;
     
+    void initDamageCollision();
+    void initAttackTimeline();
+
     void killImpl() override;
     void inflictDamagesImpl(int damages, bool isCrit) override;
 
     void updateImpl() override;
+    void updateVelocity();
+    void updateAttackTimeline();
     void updateFacingImpl() override;
 
     bool isNearPlayer();

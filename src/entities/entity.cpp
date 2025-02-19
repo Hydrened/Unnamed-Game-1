@@ -92,12 +92,14 @@ void Entity::kill() {
 
 void Entity::inflictDamages(int damages, float crit) {
     static H2DE_Engine* engine = game->getEngine();
+    static float damageRange = game->getData()->damageRange;
     static float critDamageMultiplier = game->getData()->critDamageMultiplier;
 
     bool isCrit = H2DE_RandomFloatInRange(0.0f, 100.0f) < crit;
     bool isPlayer = dynamic_cast<Player*>(this) != nullptr;
 
-    if (isCrit) damages *= critDamageMultiplier;
+    if (isCrit) damages = std::round(damages * critDamageMultiplier);
+    damages += std::round(damages * H2DE_RandomFloatInRange(damageRange * -1, damageRange) / 100.0f);
     damages = std::max(damages - data.stats.defence, 0);
     health = std::max(health - damages, 0);
 

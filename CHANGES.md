@@ -1,3 +1,12 @@
+## 2.0.7
+#### ADDED
+- damage range
+#### FIXED
+- crash when killing enemies
+- enemies can't attack after one time
+#### LIB
+- updated from H2DE-2.1.4 to H2DE-2.1.6
+
 ## 2.0.6
 #### ADDED
 - time left
@@ -13,7 +22,7 @@
 - item drop from enemies's center
 - item picked up going to player's center
 #### LIB
-- updated from H2DE-2.1.1 to H2DE-2.1.3
+- updated from H2DE-2.1.1 to H2DE-2.1.4
 
 ## 2.0.5
 #### ADDED
